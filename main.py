@@ -26,17 +26,16 @@ def index():
 """
 
 async def handle(request):
+  return web.Response(text=index(), content_type='text/html')
+
+async def handle_posts(request):
   async with pool.acquire() as conn:
     async with conn.cursor() as cur:
       await cur.execute('select * from posts')
       ret = []
       async for row in cur:
-        ret.append(row)
-      return web.Response(text=index(), content_type='text/html')
-      #return web.Response(text='got from db: {}'.format(ret))
-  #name = request.match_info.get('name', "Anonymous")
-  #text = "Hello, " + name
-  #return web.Response(text=text)
+        ret.append({"content": row[0], "user_name": row[1]})
+      return web.json_response({"posts": ret})
 
 async def setup_postgres_pool():
   global pool
@@ -46,6 +45,7 @@ async def setup_postgres_pool():
 app = web.Application()
 app.router.add_get('/', handle)
 app.router.add_get('/{name}', handle)
+app.router.add_get('/api/posts', handle_posts)
 app.router.add_static('/dist', './dist')
 
 if __name__ == '__main__':

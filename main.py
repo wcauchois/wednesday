@@ -19,7 +19,7 @@ def index():
     <title>It's Wednesday, my dudes</title>
   </head>
   <body>
-    <div id="container"></div>
+    <div id="root"></div>
     <script type="text/javascript" src="dist/bundle.js"></script>
   </body>
 </html>

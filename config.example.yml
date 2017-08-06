@@ -1,0 +1,5 @@
+database:
+  dbname: wednesday
+  user: postgres
+  password: SUPERSECRET
+  host: 127.0.0.1

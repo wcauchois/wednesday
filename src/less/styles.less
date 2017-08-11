@@ -1,7 +1,31 @@
 @import './colors.less';
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+@andrewPoopBrown: #B59B18;
+@andrewLightBrown: #E8A737;
 
 body {
-  font-family: sans-serif;
+  font-family: 'Roboto', sans-serif;
+}
+
+.post {
+  margin: 5px 0;
+
+  .post-inner {
+    display: inline-block;
+    background-color: @andrewLightBrown;
+
+    .title {
+      background-color: @andrewPoopBrown;
+      padding: 5px 10px 5px 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 0 10px 5px 10px;
+    }
+  }
 }
 
 a {

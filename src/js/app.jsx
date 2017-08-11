@@ -5,6 +5,9 @@ import {createStore, applyMiddleware, compose} from 'redux';
 import {Provider, connect} from 'react-redux';
 import thunk from 'redux-thunk';
 import {Map} from 'immutable';
+import Root from 'views/Root';
+
+import '../less/styles.less';
 
 const initialState = Map({
   counter: 0
@@ -30,6 +33,7 @@ const store = createStore(
   applyMiddleware(thunk)
 );
 
+/*
 class ThingComponent extends Component {
   render() {
     return <div>
@@ -65,20 +69,11 @@ class Index extends Component {
     </div>;
   }
 }
+*/
 
 ReactDOM.render(
   <Provider store={store}>
-    <Index />
+    <Root />
   </Provider>,
   document.getElementById('root')
 );
-
-/*
-lets setup routing later
-const routerSwitch = <Switch>
-  <Route exact path='/' component={Index} />
-</Switch>;
-*/
-
-console.log('hello');
-

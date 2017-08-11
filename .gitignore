@@ -2,4 +2,5 @@
 dist
 config.yml
 node_modules
+.DS_Store
 ._*

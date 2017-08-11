@@ -1,12 +1,10 @@
 const webpack = require('webpack');
-
-const javascriptPath = __dirname + '/src/js';
+const DashboardPlugin = require('webpack-dashboard/plugin');
 
 module.exports = {
   entry: [
-    './app.jsx'
+    './src/js/app.jsx'
   ],
-  context: javascriptPath,
   output: {
     path: __dirname + '/dist',
     publicPath: '/',
@@ -20,22 +18,14 @@ module.exports = {
       query: {
         presets: ["es2015", "react"]
       }
-    }, {
-      test: /\.less$/,
-      use: [
-        {loader: 'style-loader'},
-        {loader: 'css-loader'},
-        {loader: 'less-loader'}
-      ]
     }]
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
-    modules: [
-      javascriptPath,
-      __dirname + '/node_modules'
-    ]
+    extensions: ['.js', '.jsx']
   },
+  plugins: [
+    new DashboardPlugin()
+  ],
   devServer: {
     contentBase: './dist'
   }

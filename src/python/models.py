@@ -12,3 +12,4 @@ class Post(Base):
     parent_id = sa.Column(sa.Integer,
                         sa.ForeignKey("posts.id"),
                         nullable=False)
+    content = sa.Column(sa.Text)

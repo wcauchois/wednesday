@@ -9,12 +9,11 @@ from aiohttp import WSMsgType
 import json
 import uuid
 
+from utils import get_db_url
+
+
 logger = logging.getLogger(__name__)
 
-config = yaml.load(open('config.yml'))
-db_conf = config['database']
-dsn = 'dbname={} user={} password={} host={}'.format(
-  db_conf['dbname'], db_conf['user'], db_conf['password'], db_conf['host'])
 
 class RootView(web.View):
   @aiohttp_jinja2.template('index.html')
@@ -82,7 +81,7 @@ class WebSocketView(web.View):
 
 async def setup_postgres_pool():
   global pool
-  pool = await aiopg.create_pool(dsn)
+  pool = await aiopg.create_pool(get_db_url())
   logger.info("Created PSQL pool")
 
 app = web.Application()

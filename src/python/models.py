@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -11,4 +12,5 @@ class Post(Base):
                         server_default=sa.text("now()"))
     parent_id = sa.Column(sa.Integer,
                         sa.ForeignKey("posts.id"))
+    parent = relationship("Post", remote_side=[id])
     content = sa.Column(sa.Text)

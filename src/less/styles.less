@@ -4,8 +4,37 @@
 @andrewPoopBrown: #B59B18;
 @andrewLightBrown: #E8A737;
 
-body {
+.fontFamily() {
   font-family: 'Roboto', sans-serif;
+}
+
+body {
+  .fontFamily();
+}
+
+button {
+  .fontFamily();
+  background-color: @color-secondary-1-0;
+  border: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  font-weight: bold;
+
+  &:hover {
+    background-color: @color-secondary-1-2;
+    cursor: pointer;
+  }
+}
+
+.add-post {
+  margin-top: 15px;
+
+  .textarea textarea {
+    width: 350px;
+    height: 60px;
+    font-family: monospace;
+    font-size: 12px;
+  }
 }
 
 .post {

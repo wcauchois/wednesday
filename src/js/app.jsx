@@ -1,40 +1,14 @@
-import React, {Component} from 'react';
-import {Route, Switch} from 'react-router-dom';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import {createStore, applyMiddleware, compose} from 'redux';
-import {Provider, connect} from 'react-redux';
-import thunk from 'redux-thunk';
-import {Map} from 'immutable';
+import {Provider} from 'react-redux';
 import Root from 'views/Root';
 import Transport from 'Transport';
-
-global.Transport = Transport;
-
+import store from 'config/store';
 import '../less/styles.less';
 
-const initialState = Map({
-  counter: 0
-});
-
-const TEST_ACTION = 'TEST_ACTION';
-
-const actionsMap = {
-  [TEST_ACTION]: (state) => {
-    return state.merge(Map({
-      counter: state.get('counter') + 1
-    }));
-  }
-};
-
-function rootReducer(state = initialState, action = {}) {
-  const fn = actionsMap[action.type];
-  return fn ? fn(state, action) : state;
-}
-
-const store = createStore(
-  rootReducer,
-  applyMiddleware(thunk)
-);
+// Convenience aliases for the JavaScript console
+global.Transport = Transport;
+global.store = store;
 
 /*
 class ThingComponent extends Component {

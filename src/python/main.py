@@ -10,6 +10,9 @@ import json
 import uuid
 
 from utils import get_db_url
+from models import Post
+
+tbl = Post.__table__
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +48,14 @@ class RpcMethods(object):
   @staticmethod
   async def will_always_throw(args):
     raise RpcException('This is an exception!')
+
+  @staticmethod
+  async def add_post(args):
+    async with pool.acquire() as conn:
+      async with conn.cursor() as cur:
+        res = await cur.execute(tbl.insert().values(**args[0]))
+        row = await res.first()
+        return dict(row)
 
 class WebSocketView(web.View):
   async def get_response_from_rpc_call(self, payload):
@@ -83,11 +94,6 @@ class WebSocketView(web.View):
     self.request.app['connected_clients'].remove(client)
     return ws
 
-async def setup_postgres_pool():
-  global pool
-  pool = await aiopg.create_pool(get_db_url())
-  logger.info("Created PSQL pool")
-
 app = web.Application()
 app.router.add_static('/dist', './dist')
 app.router.add_get('/ws', WebSocketView)
@@ -97,6 +103,10 @@ app.router.add_get('/{rest:.*}', RootView)
 app['connected_clients'] = []
 
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
+
+async def setup_postgres_pool():
+  app['pool'] = await aiopg.create_pool(get_db_url())
+  logger.info("Created PSQL pool")
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)

@@ -1,6 +1,6 @@
 from __future__ import with_statement
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, create_engine
 from logging.config import fileConfig
 
 # this is the Alembic Config object, which provides
@@ -15,12 +15,23 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+import sys
+sys.path.insert(0, 'src/python')
+from models import Base
+
+target_metadata = Base.metadata
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+# get database url string from config.yml
+import yaml
+db_conf = yaml.load(open('config.yml'))['database']
+db_url = 'postgresql://{user}:{password}@{host}/{dbname}'.format(**db_conf)
 
 
 def run_migrations_offline():
@@ -35,7 +46,9 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    # NOTE: overridden so we can have database credentials in one place
+    # url = config.get_main_option("sqlalchemy.url")
+    url = db_url
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True)
 
@@ -50,10 +63,12 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix='sqlalchemy.',
-        poolclass=pool.NullPool)
+    # NOTE: overridden so we can have database credentials in one place
+    # connectable = engine_from_config(
+    #     config.get_section(config.config_ini_section),
+    #     prefix='sqlalchemy.',
+    #     poolclass=pool.NullPool)
+    connectable = create_engine(db_url)
 
     with connectable.connect() as connection:
         context.configure(

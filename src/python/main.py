@@ -47,6 +47,22 @@ class RpcMethods(object):
     raise RpcException('This is an exception!')
 
 class WebSocketView(web.View):
+  async def get_response_from_rpc_call(self, payload):
+    method_name = payload['method']
+    call_id = payload['call_id']
+    arguments = payload.get('arguments', [])
+    func = getattr(RpcMethods, method_name)
+    try:
+      if func is not None:
+        ret = await func(arguments)
+        response = {'type': 'rpc_success', 'return_value': json.dumps(ret)}
+      else:
+        raise RpcException('Unknown method: {}'.format(method_name))
+    except RpcException as e:
+      response = {'type': 'rpc_error', 'message': str(e)}
+    response['call_id'] = call_id
+    return response
+
   async def get(self):
     ws = web.WebSocketResponse()
     await ws.prepare(self.request)
@@ -59,19 +75,7 @@ class WebSocketView(web.View):
         logger.info('Got WebSocket data: {}'.format(msg.data))
         payload = json.loads(msg.data)
         if payload['type'] == 'rpc':
-          method_name = payload['method']
-          call_id = payload['call_id']
-          arguments = payload.get('arguments', [])
-          func = getattr(RpcMethods, method_name)
-          try:
-            if func is not None:
-              ret = await func(arguments)
-              response = {'type': 'rpc_success', 'return_value': json.dumps(ret)}
-            else:
-              raise RpcException('Unknown method: {}'.format(method_name))
-          except RpcException as e:
-            response = {'type': 'rpc_error', 'message': e.message}
-          response['call_id'] = call_id
+          response = await self.get_response_from_rpc_call(payload)
           ws.send_json(response)
       elif msg.type == WSMsgType.ERROR:
         logger.error('WebSocket error: {}'.format(ws.exception()))

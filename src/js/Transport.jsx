@@ -1,14 +1,42 @@
 import shortid from 'shortid';
 
+const RPC_TIMEOUT = 5000;
+
 class Transport {
   constructor() {
+    window.onbeforeunload = () => this.disconnect();
+    this.unresolvedRpcs = {};
+    this.connect();
+
+    // Convenience proxy that lets you say "Transport.call.someRpc(myArguments)"
+    this.call = new Proxy({}, {
+      get: (target, name) => {
+        return (...args) => {
+          return this.callRpc(name, ...args);
+        }
+      }
+    });
+  }
+
+  getWebSocketUrl() {
     const isSecure = window.location.protocol === 'https:';
-    const webSocketUrl = `ws${isSecure ? 's' : ''}://${window.location.host}/ws`;
-    this.socket = new WebSocket(webSocketUrl);
+    return `ws${isSecure ? 's' : ''}://${window.location.host}/ws`;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      // Clear event handlers
+      this.socket.onmessage = null;
+      this.socket.onerror = null;
+      this.socket.close();
+      this.socket = null;
+    }
+  }
+
+  connect() {
+    this.socket = new WebSocket(this.getWebSocketUrl());
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onerror = this.onError.bind(this);
-    window.onbeforeunload = () => this.socket.close();
-    this.unresolvedRpcs = {};
   }
 
   callRpc(methodName, ...args) {
@@ -20,12 +48,21 @@ class Transport {
       'arguments': args
     };
     return new Promise((resolve, reject) => {
-      this.unresolvedRpcs[callId] = (response) => {
+      const timeout = setTimeout(() => {
+        const err = new Error(`RPC '${methodName}' timed out after ${RPC_TIMEOUT} milliseconds`);
+        this.unresolvedRpcs[callId] && this.unresolvedRpcs[callId](null, err);
+      }, RPC_TIMEOUT);
+      this.unresolvedRpcs[callId] = (response, err) => {
         delete this.unresolvedRpcs[callId];
-        if (response.type === 'rpc_error') {
-          reject(new Error(response.message));
+        clearTimeout(timeout);
+        if (err) {
+          reject(err);
         } else {
-          resolve(response.return_value);
+          if (response.type === 'rpc_error') {
+            reject(new Error(response.message));
+          } else {
+            resolve(response.return_value);
+          }
         }
       };
       this.sendJSON(payload);

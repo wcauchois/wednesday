@@ -1,0 +1,2 @@
+#!/bin/bash
+ipython -i -c "__import__('sys').path.insert(0, 'src/python')" --no-confirm-exit

@@ -6,14 +6,12 @@ import aiohttp_jinja2
 import jinja2
 import yaml
 import logging
-from aiohttp import WSMsgType
+from aiohttp import WSMsgType, WSCloseCode
 import json
 import uuid
 
-from utils import get_db_url
-from models import Post
-
-tbl = Post.__table__
+from utils import get_db_url, remove_null_values
+from models import Post, post_table
 
 
 logger = logging.getLogger(__name__)
@@ -35,9 +33,6 @@ class ConnectedClient(object):
   def __cmp__(self, other):
     return cmp(self.id, other.id)
 
-class RpcException(Exception):
-  pass
-
 class RpcMethods(object):
   @staticmethod
   async def test(req, args):
@@ -48,14 +43,24 @@ class RpcMethods(object):
 
   @staticmethod
   async def will_always_throw(req, args):
-    raise RpcException('This is an exception!')
+    raise Exception('This is an exception!')
 
   @staticmethod
   async def add_post(req, args):
     async with req.app['db'].acquire() as conn:
-      res = await conn.execute(tbl.insert().values(**args[0]))
-      row = await res.first()
-      return dict(row)
+      param = args[0]
+      values = remove_null_values({
+        'parent_id': param.get('parent_id'),
+        'content': param.get('content')
+      })
+      insert_result = await conn.execute(post_table.insert().values(**values))
+      row = await insert_result.first()
+      select_result = await conn.execute(
+        post_table.select().where(post_table.c.id == row['id']))
+      post_row = await select_result.first()
+      # NOTE(wcauchois): Is this really the only way to convert the result to the ORM model??
+      post = Post(**dict(post_row.items()))
+      return post.to_json()
 
 class WebSocketView(web.View):
   async def get_response_from_rpc_call(self, payload):
@@ -69,7 +74,8 @@ class WebSocketView(web.View):
         response = {'type': 'rpc_success', 'return_value': json.dumps(ret)}
       else:
         raise RpcException('Unknown method: {}'.format(method_name))
-    except RpcException as e:
+    except Exception as e:
+      logging.exception('RPC exception') # Prints traceback
       response = {'type': 'rpc_error', 'message': str(e)}
     response['call_id'] = call_id
     return response
@@ -103,6 +109,12 @@ app.router.add_get('/{rest:.*}', RootView)
 app['connected_clients'] = []
 
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
+
+# http://aiohttp.readthedocs.io/en/stable/web.html#graceful-shutdown
+async def on_shutdown(app):
+  for client in app['connected_clients']:
+    await client.socket.close(code=WSCloseCode.GOING_AWAY)
+app.on_shutdown.append(on_shutdown)
 
 async def setup_postgres_pool():
   app['db'] = await create_engine(get_db_url())

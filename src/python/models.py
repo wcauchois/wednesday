@@ -10,6 +10,5 @@ class Post(Base):
     created = sa.Column(sa.DateTime,
                         server_default=sa.text("now()"))
     parent_id = sa.Column(sa.Integer,
-                        sa.ForeignKey("posts.id"),
-                        nullable=False)
+                        sa.ForeignKey("posts.id"))
     content = sa.Column(sa.Text)

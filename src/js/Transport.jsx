@@ -21,6 +21,7 @@ class Transport {
     };
     return new Promise((resolve, reject) => {
       this.unresolvedRpcs[callId] = (response) => {
+        delete this.unresolvedRpcs[callId];
         if (response.type === 'rpc_error') {
           reject(new Error(response.message));
         } else {

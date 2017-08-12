@@ -1,4 +1,5 @@
 import shortid from 'shortid';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 const RPC_TIMEOUT = 5000;
 
@@ -34,7 +35,7 @@ class Transport {
   }
 
   connect() {
-    this.socket = new WebSocket(this.getWebSocketUrl());
+    this.socket = new ReconnectingWebSocket(this.getWebSocketUrl());
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onerror = this.onError.bind(this);
   }

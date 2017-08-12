@@ -9,6 +9,7 @@ import logging
 from aiohttp import WSMsgType, WSCloseCode
 import json
 import uuid
+from graph_store import GraphStore, NodeValue
 
 from utils import get_db_url, remove_null_values
 from models import Post, post_table

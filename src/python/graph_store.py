@@ -133,6 +133,10 @@ class Node(object):
       child.pretty(indent + 2)
 
 # This is actually a tree store, but graph store sounds cooler.
+
+# NOTE: Even though this can generate a list of diffs, the serverside graph store
+# doesn't support applying those diffs. We don't really need that on the server,
+# so shrug.
 class GraphStore(object):
   """
   An immutable store of Nodes. Supports operations on these Nodes and diffing
@@ -145,6 +149,9 @@ class GraphStore(object):
   @property
   def children(self):
     return self.root_node.children
+
+  def serialize(self):
+    return self.root_node.serialize()
 
   def diff(self, other):
     return self.root_node.diff(other.root_node)

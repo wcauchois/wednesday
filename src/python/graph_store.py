@@ -109,7 +109,7 @@ class Node(object):
       # Reference equals means exactly equals, since we are immutable
       return []
     else:
-      ops = self.diff_fields(other)
+      ops = []
       all_keys = set(self.children.keys()) | set(other.children.keys())
       for key in all_keys:
         if key not in self.children:

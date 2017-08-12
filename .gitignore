@@ -4,3 +4,7 @@ config.yml
 node_modules
 .DS_Store
 ._*
+
+# python
+**/__pycache__/
+*.py[cod]

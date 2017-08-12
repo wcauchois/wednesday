@@ -6,6 +6,9 @@ import {Provider, connect} from 'react-redux';
 import thunk from 'redux-thunk';
 import {Map} from 'immutable';
 import Root from 'views/Root';
+import Transport from 'Transport';
+
+global.Transport = Transport;
 
 import '../less/styles.less';
 

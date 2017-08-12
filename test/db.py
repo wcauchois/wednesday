@@ -11,12 +11,16 @@ tbl = Post.__table__
 
 
 async def test1():
-    async with create_engine(get_db_url()) as engine:
-        async with engine.acquire() as conn:
+    async with create_engine(get_db_url()) as e:
+        async with e.acquire() as conn:
             print("connection successful")
-            res = await conn.execute(tbl.insert().values(parent_id=1, content="test"))
+            data = [{"parent_id":1, "content":"test"}]
+            print(str(tbl.insert().values(**data[0])))
+            res = await conn.execute(tbl.insert().values(**data[0]))
             row = await res.first()
             print(dict(row))
+            async for row in conn.execute(tbl.select()):
+                print(row.keys())
 
 
 loop = asyncio.get_event_loop()

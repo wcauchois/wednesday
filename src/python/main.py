@@ -1,6 +1,7 @@
 import asyncio
 from aiohttp import web
 import aiopg
+from aiopg.sa import create_engine
 import aiohttp_jinja2
 import jinja2
 import yaml
@@ -39,23 +40,22 @@ class RpcException(Exception):
 
 class RpcMethods(object):
   @staticmethod
-  async def test(args):
+  async def test(req, args):
     ret = {'hello': 'world'}
     if len(args) > 0:
       ret['args'] = args
     return ret
 
   @staticmethod
-  async def will_always_throw(args):
+  async def will_always_throw(req, args):
     raise RpcException('This is an exception!')
 
   @staticmethod
-  async def add_post(args):
-    async with pool.acquire() as conn:
-      async with conn.cursor() as cur:
-        res = await cur.execute(tbl.insert().values(**args[0]))
-        row = await res.first()
-        return dict(row)
+  async def add_post(req, args):
+    async with req.app['db'].acquire() as conn:
+      res = await conn.execute(tbl.insert().values(**args[0]))
+      row = await res.first()
+      return dict(row)
 
 class WebSocketView(web.View):
   async def get_response_from_rpc_call(self, payload):
@@ -65,7 +65,7 @@ class WebSocketView(web.View):
     func = getattr(RpcMethods, method_name)
     try:
       if func is not None:
-        ret = await func(arguments)
+        ret = await func(self.request, arguments)
         response = {'type': 'rpc_success', 'return_value': json.dumps(ret)}
       else:
         raise RpcException('Unknown method: {}'.format(method_name))
@@ -105,8 +105,8 @@ app['connected_clients'] = []
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 
 async def setup_postgres_pool():
-  app['pool'] = await aiopg.create_pool(get_db_url())
-  logger.info("Created PSQL pool")
+  app['db'] = await create_engine(get_db_url())
+  logger.info("Created PSQL engine")
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)

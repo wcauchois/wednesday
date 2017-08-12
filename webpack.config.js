@@ -4,6 +4,7 @@ const javascriptPath = __dirname + '/src/js';
 
 module.exports = {
   entry: [
+    'babel-polyfill',
     './app.jsx'
   ],
   context: javascriptPath,

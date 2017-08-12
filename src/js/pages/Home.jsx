@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
-import {addPost} from 'actions';
+import {addPost, setPosts} from 'actions';
+import Transport from 'Transport';
 
 class Post extends Component {
   render() {
@@ -55,7 +56,12 @@ const AddPost = connect(
   null,
   dispatch => {
     return {
-      addPost: post => dispatch(addPost(post))
+      addPost: post => {
+        dispatch(async function(dispatch) {
+          const postFromServer = await Transport.call.add_post(post);
+          dispatch(addPost(postFromServer));
+        });
+      }
     };
   }
 )(AddPostComponent);
@@ -72,11 +78,13 @@ class PostListComponent extends Component {
   }
 }
 
-const PostList = connect(state => {
-  return {posts: state.get('posts')};
-})(PostListComponent);
+const PostList = connect(
+  state => {
+    return {posts: state.get('posts')};
+  }
+)(PostListComponent);
 
-export default class Index extends Component {
+class HomeComponent extends Component {
   render() {
     return <div>
       This is the index page.<br />
@@ -86,4 +94,24 @@ export default class Index extends Component {
       </div>
     </div>;
   }
+
+  componentDidMount() {
+    this.props.loadPosts();
+  }
 }
+
+const Home = connect(
+  null,
+  dispatch => {
+    return {
+      loadPosts: () => {
+        dispatch(async function(dispatch) {
+          const response = await Transport.call.all_posts();
+          dispatch(setPosts(response.posts));
+        });
+      }
+    };
+  }
+)(HomeComponent);
+
+export default Home;

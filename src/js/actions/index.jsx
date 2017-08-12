@@ -1,5 +1,6 @@
 export const TEST_ACTION = 'TEST_ACTION';
 export const ADD_POST = 'ADD_POST';
+export const SET_POSTS = 'SET_POSTS';
 
 export function testAction() {
   return {
@@ -12,4 +13,11 @@ export function addPost(post) {
     type: ADD_POST,
     post: post
   };
+}
+
+export function setPosts(posts) {
+  return {
+    type: SET_POSTS,
+    posts: posts
+  }
 }

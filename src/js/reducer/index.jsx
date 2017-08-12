@@ -1,4 +1,4 @@
-import {TEST_ACTION, ADD_POST} from 'actions'
+import {TEST_ACTION, ADD_POST, SET_POSTS} from 'actions'
 import {Map, List} from 'immutable';
 
 const initialState = Map({
@@ -18,6 +18,10 @@ const actionsMap = {
 
   [ADD_POST]: (state, action) => {
     return state.update('posts', posts => posts.push(action.post));
+  },
+
+  [SET_POSTS]: (state, action) => {
+    return state.set('posts', List(action.posts));
   }
 };
 

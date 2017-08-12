@@ -62,6 +62,16 @@ class RpcMethods(object):
       post = Post(**dict(post_row.items()))
       return post.to_json()
 
+  @staticmethod
+  async def all_posts(req, args):
+    async with req.app['db'].acquire() as conn:
+      result = conn.execute(post_table.select().order_by(post_table.c.created))
+      post_json_list = []
+      async for row in result:
+        post = Post(**dict(row.items()))
+        post_json_list.append(post.to_json())
+      return {'posts': post_json_list}
+
 class WebSocketView(web.View):
   async def get_response_from_rpc_call(self, payload):
     method_name = payload['method']

@@ -1,13 +1,33 @@
 import shortid from 'shortid';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import {parseJsonPromise} from 'Utils';
 
 const RPC_TIMEOUT = 5000;
+
+// https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Ready_state_constants
+const ReadyState = {
+  CONNECTING: 0,
+  OPEN: 1,
+  CLOSING: 2,
+  CLOSED: 3
+};
+
+class QueuedRpc {
+  constructor(methodName, args, resolve, reject) {
+    this.methodName = methodName;
+    this.args = args;
+    this.resolve = resolve;
+    this.reject = reject;
+  }
+}
 
 class Transport {
   constructor() {
     window.onbeforeunload = () => this.disconnect();
     this.unresolvedRpcs = {};
     this.connect();
+    // RPCs may be queued if the WebSocket isn't yet connected.
+    this.queuedRpcs = [];
 
     // Convenience proxy that lets you say "Transport.call.someRpc(myArguments)"
     this.call = new Proxy({}, {
@@ -29,6 +49,7 @@ class Transport {
       // Clear event handlers
       this.socket.onmessage = null;
       this.socket.onerror = null;
+      this.socket.onopen = null;
       this.socket.close();
       this.socket = null;
     }
@@ -38,9 +59,22 @@ class Transport {
     this.socket = new ReconnectingWebSocket(this.getWebSocketUrl());
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onerror = this.onError.bind(this);
+    this.socket.onopen = this.onOpen.bind(this);
   }
 
+  // Queues up the RPC if we're not connected yet.
   callRpc(methodName, ...args) {
+    if (this.socket.readyState !== ReadyState.OPEN) {
+      // TODO: We should probably impose a timeout here as well.
+      return new Promise((resolve, reject) => {
+        this.queuedRpcs.push(new QueuedRpc(methodName, args, resolve, reject));
+      });
+    } else {
+      return this.reallyCallRpc(methodName, ...args);
+    }
+  }
+
+  reallyCallRpc(methodName, ...args) {
     const callId = shortid.generate();
     const payload = {
       'type': 'rpc',
@@ -62,12 +96,24 @@ class Transport {
           if (response.type === 'rpc_error') {
             reject(new Error(response.message));
           } else {
-            resolve(response.return_value);
+            parseJsonPromise(response.return_value).then(resolve, reject);
           }
         }
       };
       this.sendJSON(payload);
     });
+  }
+
+  executeQueuedRpcs() {
+    this.queuedRpcs.forEach(queuedRpc => {
+      this.reallyCallRpc(queuedRpc.methodName, queuedRpc.args)
+        .then(queuedRpc.resolve, queuedRpc.reject);
+    });
+    this.queuedRpcs = [];
+  }
+
+  onOpen(event) {
+    this.executeQueuedRpcs();
   }
 
   onMessage(event) {

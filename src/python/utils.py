@@ -1,7 +1,23 @@
 import yaml
+import hashlib
+from base64 import b64encode
 
 def unix_time_seconds(dt):
   return int(dt.timestamp())
+
+def anonymize_string(s, nchars=8):
+  m = hashlib.md5()
+  m.update(s.encode('utf-8'))
+  return b64encode(m.digest()).decode('utf-8')[:nchars]
+
+def get_ip_address_from_request(req):
+  # https://distinctplace.com/2014/04/23/story-behind-x-forwarded-for-and-x-real-ip-headers/
+  if 'x-real-ip' in req.headers:
+    return req.headers['x-real-ip']
+  else:
+    # https://github.com/aio-libs/aiohttp/issues/642#issuecomment-158888961
+    peername = req.transport.get_extra_info('peername')
+    return peername and peername[0] # Host is the first elem of the tuple.
 
 def get_db_url():
   db_conf = yaml.load(open('config.yml'))['database']

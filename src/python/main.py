@@ -12,7 +12,11 @@ import uuid
 from graph_store import GraphStore, NodeValue, Node
 from collections import defaultdict
 
-from utils import get_db_url, remove_null_values, unix_time_seconds
+from utils import (
+  get_db_url, remove_null_values, unix_time_seconds,
+  get_ip_address_from_request, anonymize_string
+)
+
 from models import Post, post_table
 
 
@@ -44,18 +48,20 @@ class ConnectedClient(object):
     return cmp(self.id, other.id)
 
 class PostValue(NodeValue):
-  def __init__(self, id, created, parent_id, content):
+  def __init__(self, id, created, parent_id, content, ip_address):
     self.id = id
     self.created = created
     self.parent_id = parent_id
     self.content = content
+    self.ip_address = ip_address
 
   def serialize(self):
     return remove_null_values({
       'id': self.id,
       'created': self.created and unix_time_seconds(self.created),
       'parent_id': self.parent_id,
-      'content': self.content
+      'content': self.content,
+      'anonymized_author_identifier': self.ip_address and anonymize_string(self.ip_address)
     })
 
 def topo_sort(posts):
@@ -105,18 +111,17 @@ class RpcMethods(object):
       param = args[0]
       values = remove_null_values({
         'parent_id': param.get('parent_id'),
-        'content': param.get('content')
+        'content': param.get('content'),
+        'ip_address': get_ip_address_from_request(req)
       })
       insert_result = await conn.execute(post_table.insert().values(**values))
       row = await insert_result.first()
       select_result = await conn.execute(
         post_table.select().where(post_table.c.id == row['id']))
       post_row = await select_result.first()
-      # NOTE(wcauchois): Is this really the only way to convert the result to the ORM model??
-      post = Post(**dict(post_row.items()))
       post_value = PostValue(**dict(post_row.items()))
       await queue.put(PostAddedQueueMessage(post_value))
-      return post.to_json()
+      return {'id': row['id']}
 
   # SOON TO BE DEPRECATED FOR GRAPH SYNCING
   @staticmethod

@@ -80,6 +80,37 @@ file and try again.  Then lastly, to commit the change the the database run
 
 [Here is a tutorial with the basic commands](http://alembic.zzzcomputing.com/en/latest/tutorial.html).
 
+Nginx Configuration
+---
+
+Aside from the normal proxy passthrough, you must configure Nginx for websockets, and to pass
+the X-Real-IP header used to determine the client's IP address.
+
+Here's my configuration:
+
+```nginx
+    server {
+      listen 80;
+      server_name yourserver.net;
+      location /ws {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+      location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+    }
+```
+
+See also https://easyengine.io/tutorials/nginx/forwarding-visitors-real-ip/.
+
+(Note: I'm not sure if there's a way to avoid the duplication in that config, feel free to improve.)
 
 Frontend Stuff
 ---

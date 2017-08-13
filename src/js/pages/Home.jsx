@@ -4,21 +4,41 @@ import {Link} from 'react-router-dom';
 import {addPost, setPosts} from 'actions';
 import Transport from 'Transport';
 import moment from 'moment';
+import tinycolor from 'tinycolor2';
+import {pickColorFromString, nbsp} from 'Utils';
 
 class Post extends Component {
   render() {
     const created = moment.unix(this.props.post.created);
     const absoluteTimestamp = created.format('MM/DD/YY(ddd)HH:mm:ss');
     const relativeTimestamp = created.fromNow();
+    let authorId;
+    if (this.props.post.anonymized_author_identifier) {
+      const identifier = this.props.post.anonymized_author_identifier;
+      const bgColor = pickColorFromString(identifier);
+      const bgTinyColor = tinycolor({r: bgColor[0], g: bgColor[1], b: bgColor[2]});
+      const fgColorString = bgTinyColor.isLight() ? '#000' : '#fff';
+      const bgColorString = bgTinyColor.toRgbString();
+      const style = {backgroundColor: bgColorString, color: fgColorString};
+      authorId = <li className="authorId">
+        ID:{nbsp}
+        <span className="authorIdSlug" style={style}>
+          {this.props.post.anonymized_author_identifier}
+        </span>
+      </li>;
+    }
     return <div className="post">
       <div className="post-inner">
         <div className="title">
-          <span className="author">
-            Anonymous
-          </span>
-          <span className="timestamp" title={relativeTimestamp}>
-            {absoluteTimestamp}
-          </span>
+          <ul>
+            <li className="author">
+              Anonymous
+            </li>
+            <li className="timestamp" title={relativeTimestamp}>
+              {absoluteTimestamp}
+            </li>
+            {authorId}
+          </ul>
         </div>
         <div className="content">
           {this.props.post.content}

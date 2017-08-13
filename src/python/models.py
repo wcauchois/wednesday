@@ -12,6 +12,7 @@ class Post(Base):
   parent_id = sa.Column(sa.Integer,
                         sa.ForeignKey("posts.id"))
   content = sa.Column(sa.Text)
+  ip_address = sa.Column(sa.String(128))
 
   def to_json(self):
     return remove_null_values({

@@ -2,7 +2,7 @@ import shortid from 'shortid';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {parseJsonPromise} from 'Utils';
 import store from 'config/store';
-import {setPostGraph} from 'actions';
+import {setPostGraph, updatePostGraph} from 'actions';
 import {GraphStore, Node} from 'graph-store';
 
 const RPC_TIMEOUT = 5000;
@@ -136,6 +136,7 @@ class Transport {
         new GraphStore(Node.deserialize(payload.graph))
       ));
     } else if (payload.type === 'update_graph') {
+      store.dispatch(updatePostGraph(payload.ops));
     }
   }
 

@@ -68,8 +68,10 @@ const AddPost = connect(
 
 class PostListComponent extends Component {
   render() {
-    const posts = this.props.posts.map((post, index) => {
-      return <Post key={index} post={post} />;
+    const flatPosts = this.props.post_graph.allFlat().map(n => n.value);
+    flatPosts.sort((x, y) => x.created - y.created); // Order by timestamp
+    const posts = flatPosts.map((post, index) => {
+      return post && <Post key={index} post={post} />;
     });
     return <div>
       {posts}
@@ -80,7 +82,7 @@ class PostListComponent extends Component {
 
 const PostList = connect(
   state => {
-    return {posts: state.get('posts')};
+    return {post_graph: state.get('post_graph')}
   }
 )(PostListComponent);
 
@@ -96,13 +98,15 @@ class HomeComponent extends Component {
   }
 
   componentDidMount() {
-    this.props.loadPosts();
+    // XXX: Now we should be getting posts from the initial sync message.
+    // this.props.loadPosts();
   }
 }
 
 const Home = connect(
   null,
   dispatch => {
+    // XXX: Delete this
     return {
       loadPosts: () => {
         dispatch(async function(dispatch) {

@@ -19,6 +19,12 @@ from models import Post, post_table
 logger = logging.getLogger(__name__)
 queue = asyncio.Queue()
 
+class QueueMessage(object):
+  pass
+
+class PostAddedQueueMessage(QueueMessage):
+  def __init__(self, post_value):
+    self.post_value = post_value
 
 class RootView(web.View):
   @aiohttp_jinja2.template('index.html')
@@ -108,6 +114,8 @@ class RpcMethods(object):
       post_row = await select_result.first()
       # NOTE(wcauchois): Is this really the only way to convert the result to the ORM model??
       post = Post(**dict(post_row.items()))
+      post_value = PostValue(**dict(post_row.items()))
+      await queue.put(PostAddedQueueMessage(post_value))
       return post.to_json()
 
   # SOON TO BE DEPRECATED FOR GRAPH SYNCING
@@ -174,6 +182,19 @@ async def queue_worker(app):
     logger.info('Processing queue message')
     if item is None:
       break
+    elif isinstance(item, PostAddedQueueMessage):
+      post = item.post_value
+      node = Node(post.id, post)
+      parent_id = post.parent_id
+      for client in app['connected_clients']:
+        old_graph = client.post_graph
+        new_graph = old_graph.add_node(parent_id or Node.ROOT_ID, node)
+        ops = old_graph.diff(new_graph)
+        if len(ops) > 0:
+          client.socket.send_json({
+            'type': 'update_graph',
+            'ops': [o.serialize() for o in ops]
+          })
 
 app = web.Application()
 app.router.add_static('/dist', './dist')

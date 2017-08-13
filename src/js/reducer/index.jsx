@@ -1,4 +1,4 @@
-import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH} from 'actions'
+import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH, UPDATE_POST_GRAPH} from 'actions'
 import {Map, List} from 'immutable';
 import {GraphStore} from 'graph-store';
 
@@ -28,7 +28,11 @@ const actionsMap = {
 
   [SET_POST_GRAPH]: (state, action) => {
     return state.set('post_graph', action.graph);
-  }
+  },
+
+  [UPDATE_POST_GRAPH]: (state, action) => {
+    return state.set('post_graph', state.get('post_graph').apply(action.ops));
+  },
 };
 
 export default function reducer(state = initialState, action = {}) {

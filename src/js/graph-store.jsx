@@ -14,7 +14,7 @@ export class Node {
   }
 
   addChild(newChild) {
-    return withChildren(this.children.set(newChild.id, newChild));
+    return this.withChildren(this.children.set(newChild.id, newChild));
   }
 
   static deserialize(json, valueDeserializer=(x=>x)) {
@@ -40,7 +40,7 @@ export class Node {
     return opList.reduce((acc, op) => {
       if (op.type === 'add') {
         if (op.parent_id === acc.id) {
-          return acc.addChild(this.deserialize(op.node));
+          return acc.addChild(this.constructor.deserialize(op.node));
         } else if (acc.transitiveChildIdSet.has(op.parent_id)) {
           return acc.applyToChildren([op], valueDeserializer);
         } else {
@@ -68,7 +68,22 @@ export class GraphStore {
     this.rootNode = rootNode || new Node(Node.ROOT_ID);
   }
 
+  allFlat() {
+    const result = [];
+    let workingSet = [this.rootNode];
+    while (workingSet.length > 0) {
+      const node = workingSet.pop();
+      result.push(node);
+      workingSet = workingSet.concat(node.children.valueSeq().toArray());
+    }
+    return result.slice(1);
+  }
+
   withRootNode(newRootNode) {
     return new GraphStore(newRootNode);
+  }
+
+  apply(opList, valueDeserializer=(x=>x)) {
+    return this.withRootNode(this.rootNode.apply(opList, valueDeserializer));
   }
 }

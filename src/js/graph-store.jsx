@@ -1,10 +1,10 @@
-import {Map, List} from 'immutable';
+import {Map, List, Set} from 'immutable';
 
-class Node {
+export class Node {
   constructor(id, value, children) {
     this.id = id;
     this.value = value;
-    this.children = children ? Map(children) : children;
+    this.children = Map(children || {})
     this.transitiveChildIdSet = Set(this.children.map(c => c.id)).union(
       this.children.map(c => c.transitiveChildIdSet).flatten(true));
   }
@@ -63,9 +63,9 @@ class Node {
 
 Node.ROOT_ID = -1;
 
-class GraphStore {
+export class GraphStore {
   constructor(rootNode) {
-    this.rootNode = rootNode || Node(Node.ROOT_ID);
+    this.rootNode = rootNode || new Node(Node.ROOT_ID);
   }
 
   withRootNode(newRootNode) {

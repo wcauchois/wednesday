@@ -9,13 +9,15 @@ import logging
 from aiohttp import WSMsgType, WSCloseCode
 import json
 import uuid
-from graph_store import GraphStore, NodeValue
+from graph_store import GraphStore, NodeValue, Node
+from collections import defaultdict
 
-from utils import get_db_url, remove_null_values
+from utils import get_db_url, remove_null_values, unix_time_seconds
 from models import Post, post_table
 
 
 logger = logging.getLogger(__name__)
+queue = asyncio.Queue()
 
 
 class RootView(web.View):
@@ -30,9 +32,54 @@ class ConnectedClient(object):
   def __init__(self, socket):
     self.id = get_uuid()
     self.socket = socket
+    self.post_graph = GraphStore()
 
   def __cmp__(self, other):
     return cmp(self.id, other.id)
+
+class PostValue(NodeValue):
+  def __init__(self, id, created, parent_id, content):
+    self.id = id
+    self.created = created
+    self.parent_id = parent_id
+    self.content = content
+
+  def serialize(self):
+    return remove_null_values({
+      'id': self.id,
+      'created': self.created and unix_time_seconds(self.created),
+      'parent_id': self.parent_id,
+      'content': self.content
+    })
+
+def topo_sort(posts):
+  # Based on https://en.wikipedia.org/wiki/Topological_sorting#Kahn.27s_algorithm
+  result = []
+  parent_id_to_post_map = defaultdict(list)
+  for post in posts:
+    parent_id_to_post_map[post.parent_id].append(post)
+  working_set = parent_id_to_post_map.get(None, []) # Nodes which have no parent.
+  while len(working_set) > 0:
+    cur = working_set.pop()
+    result.append(cur)
+    if cur.parent_id is not None:
+      for child in parent_id_to_post_map.get(cur.parent_id, []):
+        working_set.append(child)
+  return result
+
+async def convert_posts_into_graph_store(app):
+  "Convert the entire posts table into a GraphStore. This will not scale."
+  async with app['db'].acquire() as conn:
+    rows = conn.execute(post_table.select())
+    post_list = []
+    async for row in rows:
+      post_list.append(PostValue(**dict(row.items())))
+    sorted_posts = topo_sort(post_list)
+    g = GraphStore()
+    for post in sorted_posts:
+      node_from_post = Node(post.id, post)
+      g = g.add_node(post.parent_id or Node.ROOT_ID, node_from_post)
+    return g
 
 class RpcMethods(object):
   @staticmethod
@@ -63,6 +110,7 @@ class RpcMethods(object):
       post = Post(**dict(post_row.items()))
       return post.to_json()
 
+  # SOON TO BE DEPRECATED FOR GRAPH SYNCING
   @staticmethod
   async def all_posts(req, args):
     async with req.app['db'].acquire() as conn:
@@ -91,13 +139,22 @@ class WebSocketView(web.View):
     response['call_id'] = call_id
     return response
 
+  async def send_initial_graph_sync(self):
+    g = await convert_posts_into_graph_store(self.request.app)
+    self.client.post_graph = g
+    self.client.socket.send_json({
+      'type': 'sync_graph',
+      'graph': g.serialize()
+    })
+
   async def get(self):
     ws = web.WebSocketResponse()
     await ws.prepare(self.request)
     logger.info('WebSocket client connected')
-    client = ConnectedClient(ws)
-    self.request.app['connected_clients'].append(client)
+    self.client = ConnectedClient(ws)
+    self.request.app['connected_clients'].append(self.client)
     # Could get variables from session here for auth etc
+    asyncio.ensure_future(self.send_initial_graph_sync()) # Background
     async for msg in ws:
       if msg.type == WSMsgType.TEXT:
         logger.info('Got WebSocket data: {}'.format(msg.data))
@@ -108,8 +165,15 @@ class WebSocketView(web.View):
       elif msg.type == WSMsgType.ERROR:
         logger.error('WebSocket error: {}'.format(ws.exception()))
     logger.info('WebSocket connection closed')
-    self.request.app['connected_clients'].remove(client)
+    self.request.app['connected_clients'].remove(self.client)
     return ws
+
+async def queue_worker(app):
+  while True:
+    item = await queue.get()
+    logger.info('Processing queue message')
+    if item is None:
+      break
 
 app = web.Application()
 app.router.add_static('/dist', './dist')
@@ -123,6 +187,7 @@ aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 
 # http://aiohttp.readthedocs.io/en/stable/web.html#graceful-shutdown
 async def on_shutdown(app):
+  await queue.put(None)
   for client in app['connected_clients']:
     await client.socket.close(code=WSCloseCode.GOING_AWAY)
 app.on_shutdown.append(on_shutdown)
@@ -135,5 +200,5 @@ if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)
   loop = asyncio.get_event_loop()
   loop.run_until_complete(setup_postgres_pool())
+  loop.create_task(queue_worker(app))
   web.run_app(app)
-

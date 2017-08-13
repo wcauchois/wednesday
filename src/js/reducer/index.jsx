@@ -1,9 +1,11 @@
-import {TEST_ACTION, ADD_POST, SET_POSTS} from 'actions'
+import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH} from 'actions'
 import {Map, List} from 'immutable';
+import {GraphStore} from 'graph-store';
 
 const initialState = Map({
   counter: 0,
-  posts: List()
+  posts: List(),
+  post_graph: new GraphStore()
 });
 
 const actionsMap = {
@@ -22,6 +24,10 @@ const actionsMap = {
 
   [SET_POSTS]: (state, action) => {
     return state.set('posts', List(action.posts));
+  },
+
+  [SET_POST_GRAPH]: (state, action) => {
+    return state.set('post_graph', action.graph);
   }
 };
 

@@ -1,11 +1,7 @@
 import yaml
-import datetime
-
-epoch = datetime.datetime.utcfromtimestamp(0)
-
 
 def unix_time_seconds(dt):
-  return int((dt - epoch).total_seconds())
+  return int(dt.timestamp())
 
 def get_db_url():
   db_conf = yaml.load(open('config.yml'))['database']

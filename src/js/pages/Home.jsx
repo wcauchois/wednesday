@@ -3,14 +3,21 @@ import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
 import {addPost, setPosts} from 'actions';
 import Transport from 'Transport';
+import moment from 'moment';
 
 class Post extends Component {
   render() {
+    const created = moment.unix(this.props.post.created);
+    const absoluteTimestamp = created.format('MM/DD/YY(ddd)HH:mm:ss');
+    const relativeTimestamp = created.fromNow();
     return <div className="post">
       <div className="post-inner">
         <div className="title">
           <span className="author">
             Anonymous
+          </span>
+          <span className="timestamp" title={relativeTimestamp}>
+            {absoluteTimestamp}
           </span>
         </div>
         <div className="content">
@@ -96,26 +103,8 @@ class HomeComponent extends Component {
       </div>
     </div>;
   }
-
-  componentDidMount() {
-    // XXX: Now we should be getting posts from the initial sync message.
-    // this.props.loadPosts();
-  }
 }
 
-const Home = connect(
-  null,
-  dispatch => {
-    // XXX: Delete this
-    return {
-      loadPosts: () => {
-        dispatch(async function(dispatch) {
-          const response = await Transport.call.all_posts();
-          dispatch(setPosts(response.posts));
-        });
-      }
-    };
-  }
-)(HomeComponent);
+const Home = connect()(HomeComponent);
 
 export default Home;

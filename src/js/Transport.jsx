@@ -120,8 +120,8 @@ class Transport {
   }
 
   onMessage(event) {
-    console.log(`Got message from server: ${event.data}`);
     const payload = JSON.parse(event.data);
+    console.log('Got message from server:', payload);
     if (/rpc_(error|success)/.test(payload.type)) {
       const callId = payload.call_id;
       if (callId in this.unresolvedRpcs) {

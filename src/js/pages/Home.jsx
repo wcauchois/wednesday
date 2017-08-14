@@ -88,7 +88,7 @@ class AddPostComponent extends Component {
   submitButtonClicked() {
     if (this.state.content) {
       this.props.addPost({
-				parent_id: this.props.focused_post_id,
+        parent_id: this.props.focused_post_id,
         content: this.state.content
       });
       this.setState({content: ''});
@@ -113,14 +113,14 @@ class AddPostComponent extends Component {
 
 const AddPost = connect(
   state => {
-		return {
-			focused_post_id: state.get('focused')
-		};
-	},
+    return {
+      focused_post_id: state.get('focused')
+    };
+  },
   dispatch => {
     return {
       addPost: post => {
-				dispatch(async function(dispatch) {
+        dispatch(async function(dispatch) {
           const postFromServer = await Transport.call.add_post(post);
           dispatch(addPost(postFromServer));
         });

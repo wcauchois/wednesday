@@ -1,8 +1,10 @@
 @import './colors.less';
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-@andrewPoopBrown: #B59B18;
-@andrewLightBrown: #E8A737;
+@postTitle: #c6c9ff;
+@postInner: #e7e8ff;
+@focusedPostTitle: #ffd9c6;
+@focusedPostInner: #ffe8dd;
 
 .fontFamily() {
   font-family: 'Roboto', sans-serif;
@@ -37,45 +39,49 @@ button {
   }
 }
 
-.post {
-  margin: 5px 0;
+.post-node {
+  margin-left: 20px;
 
-  .post-inner {
-    display: inline-block;
-    background-color: @andrewLightBrown;
-
-    .title {
-      background-color: @andrewPoopBrown;
-      padding: 5px 10px 5px 10px;
-      margin-bottom: 5px;
-      font-weight: bold;
-
-      ul {
-        list-style-type: none;
-        padding-left: 0;
-        margin: 0;
+  .post {
+    margin: 5px 0;
+  
+    .post-inner {
+      display: inline-block;
+      background-color: @postInner;
+  
+      .title {
+        background-color: @postTitle;
+        padding: 5px 10px 5px 10px;
+        margin-bottom: 5px;
+        font-weight: bold;
+  
+        ul {
+          list-style-type: none;
+          padding-left: 0;
+          margin: 0;
+        }
+  
+        li {
+          display: inline-block;
+          margin-left: 10px;
+  
+          &:first-child {margin-left: 0;}
+        }
+  
+        .authorIdSlug {
+          padding: 2px;
+          cursor: default;
+        }
+  
+        .timestamp {
+          font-style: italic;
+          color: #5a5a5a;
+        }
       }
-
-      li {
-        display: inline-block;
-        margin-left: 10px;
-
-        &:first-child {margin-left: 0;}
+  
+      .content {
+        padding: 0 10px 5px 10px;
       }
-
-      .authorIdSlug {
-        padding: 2px;
-        cursor: default;
-      }
-
-      .timestamp {
-        font-style: italic;
-        color: #5a5a5a;
-      }
-    }
-
-    .content {
-      padding: 0 10px 5px 10px;
     }
   }
 }

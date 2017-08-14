@@ -1,15 +1,23 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
-import {addPost, setPosts} from 'actions';
+import {addPost, setPosts, focusPost} from 'actions';
 import Transport from 'Transport';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
 import {pickColorFromString, nbsp} from 'Utils';
-import {GraphStore, Node} from 'graph-store';
 
 
-class Post extends Component {
+class PostComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick() {
+    this.props.focusPost(this.props.post.id);
+  }
+
   render() {
     const created = moment.unix(this.props.post.created);
     const absoluteTimestamp = created.format('MM/DD/YY(ddd)HH:mm:ss');
@@ -29,7 +37,9 @@ class Post extends Component {
         </span>
       </li>;
     }
-    return <div className="post">
+    // TODO(amstocker): prob a better way to toggle focused css props?
+    //                  I'm not sure of the best way to do this...
+    return <div className={"post" + (this.props.focused ? " focused" : "")} onClick={this.handleClick}>
       <div className="post-inner">
         <div className="title">
           <ul>
@@ -50,6 +60,21 @@ class Post extends Component {
   }
 }
 
+const Post = connect(
+  (state, ownProps) => {
+    return {
+      focused: ownProps.post.id === state.get('focused')
+    }
+  },
+  dispatch => {
+    return {
+      focusPost: id => {
+        dispatch(focusPost(id));
+      }
+    };
+  }
+)(PostComponent);
+
 class AddPostComponent extends Component {
   constructor(props) {
     super(props);
@@ -63,6 +88,7 @@ class AddPostComponent extends Component {
   submitButtonClicked() {
     if (this.state.content) {
       this.props.addPost({
+				parent_id: this.props.focused_post_id,
         content: this.state.content
       });
       this.setState({content: ''});
@@ -82,11 +108,15 @@ class AddPostComponent extends Component {
 }
 
 const AddPost = connect(
-  null,
+  state => {
+		return {
+			focused_post_id: state.get('focused')
+		};
+	},
   dispatch => {
     return {
       addPost: post => {
-        dispatch(async function(dispatch) {
+				dispatch(async function(dispatch) {
           const postFromServer = await Transport.call.add_post(post);
           dispatch(addPost(postFromServer));
         });
@@ -98,18 +128,23 @@ const AddPost = connect(
 class PostTreeComponent extends Component {
   render() {
     const root = this.props.root;
+    const children = root.children
+                            .toArray()
+                            .sort((x, y) => x.value.created - y.value.created);
+    console.log(root);
+    console.log(children);
     return <div className="post-node">
       {(root.id >= 0) && <Post post={root.value} />}
-      {root.children && root.children.map((child_node, child_id) => {
-        return <PostTreeComponent key={child_id} root={child_node} />; 
-      })}
+      {children.map(child =>
+        <PostTreeComponent key={child.value.id} root={child} /> 
+      )}
     </div>;
   }
 }
 
 const PostTree = connect(
   state => {
-    return {root: state.get('post_graph').rootNode || new Node(Node.ROOT_ID)}
+    return {root: state.get('post_graph').rootNode}
   }
 )(PostTreeComponent);
 

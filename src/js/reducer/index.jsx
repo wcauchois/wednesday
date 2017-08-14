@@ -1,11 +1,12 @@
-import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH, UPDATE_POST_GRAPH} from 'actions'
+import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH, UPDATE_POST_GRAPH, FOCUS_POST} from 'actions'
 import {Map, List} from 'immutable';
 import {GraphStore} from 'graph-store';
 
 const initialState = Map({
   counter: 0,
   posts: List(),
-  post_graph: new GraphStore()
+  post_graph: new GraphStore(),
+  focused: undefined
 });
 
 const actionsMap = {
@@ -32,6 +33,11 @@ const actionsMap = {
 
   [UPDATE_POST_GRAPH]: (state, action) => {
     return state.set('post_graph', state.get('post_graph').apply(action.ops));
+  },
+
+  [FOCUS_POST]: (state, action) => {
+    console.log(action.post_id);
+    return state.set('focused', action.post_id);
   },
 };
 

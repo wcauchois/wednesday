@@ -6,6 +6,8 @@ import Transport from 'Transport';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
 import {pickColorFromString, nbsp} from 'Utils';
+import {GraphStore, Node} from 'graph-store';
+
 
 class Post extends Component {
   render() {
@@ -93,25 +95,23 @@ const AddPost = connect(
   }
 )(AddPostComponent);
 
-class PostListComponent extends Component {
+class PostTreeComponent extends Component {
   render() {
-    const flatPosts = this.props.post_graph.allFlat().map(n => n.value);
-    flatPosts.sort((x, y) => x.created - y.created); // Order by timestamp
-    const posts = flatPosts.map((post, index) => {
-      return post && <Post key={index} post={post} />;
-    });
-    return <div>
-      {posts}
-      <AddPost />
+    const root = this.props.root;
+    return <div className="post-node">
+      {(root.id >= 0) && <Post post={root.value} />}
+      {root.children && root.children.map((child_node, child_id) => {
+        return <PostTreeComponent key={child_id} root={child_node} />; 
+      })}
     </div>;
   }
 }
 
-const PostList = connect(
+const PostTree = connect(
   state => {
-    return {post_graph: state.get('post_graph')}
+    return {root: state.get('post_graph').rootNode || new Node(Node.ROOT_ID)}
   }
-)(PostListComponent);
+)(PostTreeComponent);
 
 class HomeComponent extends Component {
   render() {
@@ -119,7 +119,8 @@ class HomeComponent extends Component {
       This is the index page.<br />
       <Link to="/about">About page</Link><br />
       <div>
-        <PostList />
+        <PostTree />
+        <AddPost />
       </div>
     </div>;
   }

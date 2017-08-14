@@ -96,12 +96,16 @@ class AddPostComponent extends Component {
   }
 
   render() {
+    const button_text = "Add Post" + (this.props.focused_post_id
+        ? " (replying to post_id = " + this.props.focused_post_id + ")"
+        : ""
+    );
     return <div className="add-post">
       <div className="textarea">
         <textarea value={this.state.content} onChange={this.handleTextareaChange.bind(this)} />
       </div>
       <div className="controls">
-        <button onClick={this.submitButtonClicked.bind(this)}>Add Post</button>
+        <button onClick={this.submitButtonClicked.bind(this)}>{button_text}</button>
       </div>
     </div>;
   }

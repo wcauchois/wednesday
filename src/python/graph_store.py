@@ -84,6 +84,7 @@ class Node(object):
     be this node's ID, or one of its child IDs. If the target ID is not a part of this
     sub-tree, returns None, otherwise returns a new Node reflecting your modifications.
     """
+    #print("attempting to apply {} to {}, this is {}".format(str(func), target_id, self.id))
     if target_id == self.id:
       return func(self)
     elif target_id in self.transitive_child_id_set:
@@ -92,6 +93,7 @@ class Node(object):
         if ret is not None:
           return self.with_children(self.children.set(child.id, ret))
     else:
+      #print("{} is not a child of {}".format(target_id, self.id))
       return None
 
   def serialize(self):

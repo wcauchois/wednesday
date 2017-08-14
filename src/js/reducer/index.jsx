@@ -36,7 +36,6 @@ const actionsMap = {
   },
 
   [FOCUS_POST]: (state, action) => {
-    console.log(action.post_id);
     return state.set('focused', action.post_id);
   },
 };

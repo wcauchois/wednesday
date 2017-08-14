@@ -131,8 +131,6 @@ class PostTreeComponent extends Component {
     const children = root.children
                             .toArray()
                             .sort((x, y) => x.value.created - y.value.created);
-    console.log(root);
-    console.log(children);
     return <div className="post-node">
       {(root.id >= 0) && <Post post={root.value} />}
       {children.map(child =>

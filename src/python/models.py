@@ -8,9 +8,11 @@ class Post(Base):
   __tablename__ = "posts"
   id = sa.Column(sa.Integer, primary_key=True)
   created = sa.Column(sa.DateTime,
-                      server_default=sa.text("now()"))
+                      server_default=sa.text("now()"),
+                      nullable=False)
   parent_id = sa.Column(sa.Integer,
-                        sa.ForeignKey("posts.id"))
+                        sa.ForeignKey("posts.id"),
+                        nullable=False)
   content = sa.Column(sa.Text)
   ip_address = sa.Column(sa.String(128))
 

@@ -37,6 +37,7 @@ export class Node {
   }
 
   apply(opList, valueDeserializer=(x=>x)) {
+    console.log(this);
     return opList.reduce((acc, op) => {
       if (op.type === 'add') {
         if (op.parent_id === acc.id) {
@@ -84,6 +85,7 @@ export class GraphStore {
   }
 
   apply(opList, valueDeserializer=(x=>x)) {
+    console.log(this);
     return this.withRootNode(this.rootNode.apply(opList, valueDeserializer));
   }
 }

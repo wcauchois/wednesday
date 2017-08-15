@@ -174,6 +174,7 @@ class WebSocketView(web.View):
         payload = json.loads(msg.data)
         if payload['type'] == 'rpc':
           response = await self.get_response_from_rpc_call(payload)
+          logger.info('Sending WebSocket data: {}'.format(response))
           ws.send_json(response)
       elif msg.type == WSMsgType.ERROR:
         logger.error('WebSocket error: {}'.format(ws.exception()))

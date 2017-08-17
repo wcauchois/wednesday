@@ -44,6 +44,14 @@ button {
 
   .post {
     margin: 5px 0;
+
+    &.focused {
+      .post-inner {
+        .title {background-color: @focusedPostTitle;}
+
+        background-color: @focusedPostInner;
+      }
+    }
   
     .post-inner {
       display: inline-block;

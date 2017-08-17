@@ -64,8 +64,12 @@ class PostValue(NodeValue):
       'anonymized_author_identifier': self.ip_address and anonymize_string(self.ip_address)
     })
 
+  def __repr__(self):
+    return json.dumps(self.serialize())
+
 def topo_sort(posts):
   # Based on https://en.wikipedia.org/wiki/Topological_sorting#Kahn.27s_algorithm
+  # TODO(wcauchois): This should be unit tested
   result = []
   parent_id_to_post_map = defaultdict(list)
   for post in posts:
@@ -74,9 +78,7 @@ def topo_sort(posts):
   while len(working_set) > 0:
     cur = working_set.pop()
     result.append(cur)
-    if cur.parent_id is not None:
-      for child in parent_id_to_post_map.get(cur.parent_id, []):
-        working_set.append(child)
+    working_set.extend(parent_id_to_post_map.get(cur.id, []))
   return result
 
 async def convert_posts_into_graph_store(app):

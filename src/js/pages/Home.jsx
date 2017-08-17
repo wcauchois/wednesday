@@ -6,6 +6,7 @@ import Transport from 'Transport';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
 import {pickColorFromString, nbsp} from 'Utils';
+import classNames from 'classnames';
 
 
 class PostComponent extends Component {
@@ -39,7 +40,7 @@ class PostComponent extends Component {
     }
     // TODO(amstocker): prob a better way to toggle focused css props?
     //                  I'm not sure of the best way to do this...
-    return <div className={"post" + (this.props.focused ? " focused" : "")} onClick={this.handleClick}>
+    return <div className={classNames({'post': true, 'focused': this.props.focused})} onClick={this.handleClick}>
       <div className="post-inner">
         <div className="title">
           <ul>

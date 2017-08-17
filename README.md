@@ -122,3 +122,6 @@ To get set up, run:
 
 Run `webpack -w` to watch for changes and auto-webpack.
 
+Recommended to install the [Immutable.js Object Formatter](https://chrome.google.com/webstore/detail/immutablejs-object-format/hgldghadipiblonfkkicmgcbbijnpeog/related?hl=en)
+for Chrome devtools; it makes viewing Immutablejs objects sane (note this is based on [this NPM package](https://github.com/andrewdavey/immutable-devtools).
+

@@ -23,7 +23,7 @@ class Database:
     with self.engine.acquire() as conn:
       res = await conn.execute(
         select(['*']).select_from(
-          func.subtree(parent_id, MAX_SUBTREE_DEPTH)
+          func.subtree(parent_id, self.MAX_SUBTREE_DEPTH)
         )
       )
       ret = []

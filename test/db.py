@@ -2,6 +2,7 @@ import asyncio
 from aiopg.sa import create_engine
 import sqlalchemy as sa
 from sqlalchemy.sql import select, func
+from pprint import pprint
 
 import sys
 sys.path.insert(0, 'src/python')
@@ -23,8 +24,7 @@ async def test_subtree():
   async with create_engine(get_db_url()) as e:
     async with e.acquire() as conn:
       res = await conn.execute(select(['*']).select_from(func.subtree(0, 5)))
-      async for row in res:
-        print(dict(row))
+      pprint([dict(row) async for row in res])
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(test_subtree())

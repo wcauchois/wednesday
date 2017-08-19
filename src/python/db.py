@@ -26,7 +26,4 @@ class Database:
           func.subtree(parent_id, self.MAX_SUBTREE_DEPTH)
         )
       )
-      ret = []
-      async for row in res:
-        ret.append(dict(row))
-      return ret
+      return [dict(row) async for row in res]

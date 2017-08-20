@@ -39,7 +39,7 @@ class PubSub:
   async def unlisten_helper(self, cur):
     while True:
       channel = await self.to_unlisten.get()
-      await cur.execute("UNLISTEN {}".format(self.format_channel_name(post_id)))
+      await cur.execute("UNLISTEN {}".format(channel))
 
   async def listener(self):
     async with self.engine.acquire() as conn:

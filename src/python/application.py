@@ -25,7 +25,7 @@ async def on_startup(app):
 
 # http://aiohttp.readthedocs.io/en/stable/web.html#graceful-shutdown
 async def on_shutdown(app):
-  asyncio.gather(*[client.close() for client in app['clients']])
+  await asyncio.gather(*[client.close() for client in app['clients']])
   await app['db'].shutdown()
   await app['ps'].shutdown()
 

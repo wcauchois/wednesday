@@ -1,12 +1,12 @@
 import asyncio
 import json
-from aiohttp import (
-  web, WSMsgType, WSCloseCode
-)
+import logging
+from aiohttp import web, WSMsgType, WSCloseCode
 import aiohttp_jinja2
 
 from client import ConnectedClient, ResponseType
 from rpc import RpcMethods, RpcException
+from utils import get_ip_address_from_request
 
 
 class RootView(web.View):
@@ -44,10 +44,12 @@ class WebSocketView(web.View):
   #  })
 
   async def get(self):
+    logger = self.request.app.logger
     ws = web.WebSocketResponse()
     await ws.prepare(self.request)
     logger.info('WebSocket client connected')
     self.client = ConnectedClient(ws)
+    self.client.ip_address = get_ip_address_from_request(self.request)
     self.request.app['clients'].add(self.client)
     # Could get variables from session here for auth etc
     #asyncio.ensure_future(self.send_initial_graph_sync()) # Background
@@ -61,5 +63,6 @@ class WebSocketView(web.View):
       elif msg.type == WSMsgType.ERROR:
         logger.error('WebSocket error: {}'.format(ws.exception()))
     logger.info('WebSocket connection closed')
+    await self.request.app['ps'].unsubscribe(self.client)
     self.request.app['clients'].remove(self.client)
     return ws

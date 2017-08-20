@@ -1,3 +1,4 @@
+import asyncio
 from aiohttp import web
 import jinja2
 import aiohttp_jinja2
@@ -15,8 +16,8 @@ app.router.add_get('/{rest:.*}', RootView)
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 
 app['clients'] = set()
-app['db'] = Database()
-app['ps'] = PubSub()
+app['db'] = Database(app)
+app['ps'] = PubSub(app)
 
 async def on_startup(app):
   await app['db'].startup()
@@ -24,8 +25,7 @@ async def on_startup(app):
 
 # http://aiohttp.readthedocs.io/en/stable/web.html#graceful-shutdown
 async def on_shutdown(app):
-  for client in app['clients']:
-    await client.socket.close(code=WSCloseCode.GOING_AWAY)
+  asyncio.gather(*[client.close() for client in app['clients']])
   await app['db'].shutdown()
   await app['ps'].shutdown()
 

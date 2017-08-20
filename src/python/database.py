@@ -13,13 +13,14 @@ class DatabaseException(Exception):
 class Database:
   MAX_SUBTREE_DEPTH = 100
 
-  def __init__(self, url=None, loop=None):
+  def __init__(self, app, db_url=None, loop=None):
+    self.app = app
     self.loop = loop or asyncio.get_event_loop()
-    self.url = url or get_db_url()
+    self.db_url = db_url or get_db_url()
     self.engine = None
 
   async def startup(self):
-    self.engine = await create_engine(self.url)
+    self.engine = await create_engine(self.db_url)
     return self
 
   async def shutdown(self):

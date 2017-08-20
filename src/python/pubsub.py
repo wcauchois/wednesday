@@ -12,7 +12,8 @@ class PubSubException(Exception):
 
 
 class PubSub:
-  def __init__(self, db_url=None, channel_prefix="pubsub_", loop=None):
+  def __init__(self, app, db_url=None, channel_prefix="pubsub_", loop=None):
+    self.app = app
     self.loop = loop or asyncio.get_event_loop()
     self.db_url = db_url or get_db_url()
     self.engine = None
@@ -32,12 +33,12 @@ class PubSub:
 
   async def listen_helper(self, cur):
     while True:
-      post_id = await self.to_listen.get()
-      await cur.execute("LISTEN {}".format(self.format_channel_name(post_id)))
+      channel = await self.to_listen.get()
+      await cur.execute("LISTEN {}".format(channel))
 
   async def unlisten_helper(self, cur):
     while True:
-      post_id = await self.to_unlisten.get()
+      channel = await self.to_unlisten.get()
       await cur.execute("UNLISTEN {}".format(self.format_channel_name(post_id)))
 
   async def listener(self):
@@ -49,17 +50,21 @@ class PubSub:
           msg = await conn.notifies.get()
           payload = json.loads(msg.payload)
           # XXX(amstocker): should use proper response type
-          asyncio.gather(*[client.send(ResponseType.TEST, **payload) for client in self.subs[payload['id']]])
+          await asyncio.gather(*[client.send(ResponseType.TEST, payload) for client in self.subs[msg.channel]])
 
-  async def subscribe(self, client, post_id):
-    self.subs[post_id].add(client)
-    if len(self.subs[post_id]) == 1:
-      await self.to_listen.put(post_id)
+  async def subscribe(self, client):
+    channel = self.format_channel_name(client.sub_id)
+    self.subs[channel].add(client)
+    if len(self.subs[channel]) == 1:
+      await self.to_listen.put(channel)
+    self.app.logger.info("client {} subscribed to channel: {}".format(client.id, channel))
 
-  async def unsubscribe(self, client, post_id):
-    self.subs[post_id].remove(client)
-    if len(self.subs[post_id]) == 0:
-      await self.to_unlisten.put(post_id)
+  async def unsubscribe(self, client):
+    channel = self.format_channel_name(client.sub_id)
+    self.subs[channel].remove(client)
+    if len(self.subs[channel]) == 0:
+      await self.to_unlisten.put(channel)
+    self.app.logger.info("client {} unsubscribed from channel: {}".format(client.id, channel))
 
   def format_channel_name(self, post_id):
     return self.channel_prefix + str(post_id)

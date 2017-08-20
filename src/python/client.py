@@ -1,3 +1,4 @@
+from aiohttp import WSCloseCode
 from enum import Enum
 
 from utils import get_uuid
@@ -17,12 +18,16 @@ class ConnectedClient:
   def __init__(self, socket):
     self.id = get_uuid()
     self.socket = socket
+    self.ip_address = None
     self.sub_id = None
 
-  async def send(self, res_type, **values):
-    values['type'] = res_type.value
-    await self.socket.send_json(values)
-    return values
+  async def send(self, res_type, response):
+    response['type'] = res_type.value
+    await self.socket.send_json(response)
+    return response
+
+  async def close(self):
+    await self.socket.close(code=WSCloseCode.GOING_AWAY)
 
   def __cmp__(self, other):
     return cmp(self.id, other.id)

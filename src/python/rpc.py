@@ -30,7 +30,7 @@ class RpcMethods:
     values = {
       'parent_id': param.get('parent_id'),
       'content': param.get('content'),
-      'ip_address': get_ip_address_from_request(ws.request)
+      'ip_address': client.ip_address
     }
     res = await app['db'].insert_post(**values)
     return res
@@ -39,10 +39,6 @@ class RpcMethods:
   async def subscribe(app, client, args):
     post_id = args[0].get('id')
     if client.sub_id:
-      await app['ps'].unsubscribe(client, post_id)
-    await app['ps'].subscribe(client, post_id)
-
-  @staticmethod
-  async def unsubscribe(app, client, args):
-    post_id = args[0].get('id')
-    await app['ps'].unsubscribe(client, post_id)
+      await app['ps'].unsubscribe(client)
+    client.sub_id = post_id
+    await app['ps'].subscribe(client)

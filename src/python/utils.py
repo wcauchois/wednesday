@@ -1,9 +1,14 @@
 import yaml
 import hashlib
+import uuid
 from base64 import b64encode
+
 
 def unix_time_seconds(dt):
   return int(dt.timestamp())
+
+def get_uuid():
+  return uuid.uuid1()
 
 def anonymize_string(s, nchars=8):
   m = hashlib.md5()

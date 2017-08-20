@@ -6,6 +6,10 @@ from models import Post, post_table
 from utils import get_db_url
 
 
+class DatabaseException(Exception):
+  pass
+
+
 class Database:
   MAX_SUBTREE_DEPTH = 100
 
@@ -22,16 +26,16 @@ class Database:
     pass
 
   async def insert_post(self, parent_id, content=None, ip_address=None):
-    with self.engine.acquire() as conn:
+    async with self.engine.acquire() as conn:
       res = await conn.execute(
         post_table.insert().values(parent_id=parent_id,
                                    content=content,
                                    ip_address=ip_address)
       )
-      return dict(res)
+      return dict(await res.first())
 
   async def get_subtree(self, parent_id):
-    with self.engine.acquire() as conn:
+    async with self.engine.acquire() as conn:
       res = await conn.execute(
         select(['*']).select_from(
           func.subtree(parent_id, self.MAX_SUBTREE_DEPTH)

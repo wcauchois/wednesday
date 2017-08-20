@@ -1,8 +1,5 @@
 from models import Post, post_table
 from client import ConnectedClient, ResponseType
-from utils import (
-  remove_null_values
-)
 
 
 class RpcException(Exception):

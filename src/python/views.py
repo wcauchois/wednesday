@@ -5,7 +5,7 @@ from aiohttp import (
 )
 import aiohttp_jinja2
 
-from client import ConnectedClient
+from client import ConnectedClient, ResponseType
 from rpc import RpcMethods, RpcException
 
 
@@ -25,13 +25,13 @@ class WebSocketView(web.View):
       if func is not None:
         ret = await func(self.request.app, self.client, arguments)
         response = {'return_value': json.dumps(ret)}
-        res_type = RPC_SUCCESS
+        res_type = ResponseType.RPC_SUCCESS
       else:
         raise RpcException('Unknown method: {}'.format(method_name))
     except RpcException as e:
       logging.exception('RPC exception') # Prints traceback
       response = {'message': str(e)}
-      res_type = RPC_ERROR
+      res_type = ResponseType.RPC_ERROR
     response['call_id'] = call_id
     return (await self.client.send(res_type, response))
 

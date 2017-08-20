@@ -18,28 +18,25 @@ class PubSub:
     self.engine = None
     self.channel_prefix = channel_prefix
     self.subs = defaultdict(set)
-    self.running = False
     self.to_listen = asyncio.Queue()
     self.to_unlisten = asyncio.Queue()
     self._futures = []
 
   async def startup(self):
     self.engine = await create_pool(self.db_url)
-    self.running = True
     self._futures.append(self.loop.create_task(self.listener()))
     return self
 
   async def shutdown(self):
-    self.running = False
     [f.cancel() for f in self._futures]
 
   async def listen_helper(self, cur):
-    while self.running:
+    while True:
       post_id = await self.to_listen.get()
       await cur.execute("LISTEN {}".format(self.format_channel_name(post_id)))
 
   async def unlisten_helper(self, cur):
-    while self.running:
+    while True:
       post_id = await self.to_unlisten.get()
       await cur.execute("UNLISTEN {}".format(self.format_channel_name(post_id)))
 
@@ -48,7 +45,7 @@ class PubSub:
       async with conn.cursor() as cur:
         self._futures.extend([self.loop.create_task(self.listen_helper(cur)),
                               self.loop.create_task(self.unlisten_helper(cur))])
-        while self.running:
+        while True:
           msg = await conn.notifies.get()
           payload = json.loads(msg.payload)
           # XXX(amstocker): should use proper response type

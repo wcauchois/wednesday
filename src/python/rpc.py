@@ -37,8 +37,6 @@ class RpcMethods:
 
   @staticmethod
   async def subscribe(app, client, args):
-    post_id = args[0].get('id')
-    if client.sub_id:
-      await app['ps'].unsubscribe(client)
-    client.sub_id = post_id
+    await app['ps'].unsubscribe(client)
+    client.sub_id = args[0].get('id')
     await app['ps'].subscribe(client)

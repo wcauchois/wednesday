@@ -38,8 +38,6 @@ class PostComponent extends Component {
         </span>
       </li>;
     }
-    // TODO(amstocker): prob a better way to toggle focused css props?
-    //                  I'm not sure of the best way to do this...
     return <div className={classNames({'post': true, 'focused': this.props.focused})} onClick={this.handleClick}>
       <div className="post-inner">
         <div className="title">

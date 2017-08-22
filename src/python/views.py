@@ -49,14 +49,6 @@ class WebSocketView(web.View):
     response['call_id'] = call_id
     return (await self.client.send(res_type, response))
 
-  #async def send_initial_graph_sync(self):
-  #  g = await convert_posts_into_graph_store(self.request.app)
-  #  self.client.post_graph = g
-  #  self.client.socket.send_json({
-  #    'type': 'sync_graph',
-  #    'graph': g.serialize()
-  #  })
-
   async def get(self):
     logger = self.request.app.logger
     ws = web.WebSocketResponse()
@@ -66,7 +58,6 @@ class WebSocketView(web.View):
     self.client.ip_address = get_ip_address_from_request(self.request)
     self.request.app['clients'].add(self.client)
     # Could get variables from session here for auth etc
-    #asyncio.ensure_future(self.send_initial_graph_sync()) # Background
     async for msg in ws:
       if msg.type == WSMsgType.TEXT:
         logger.info('Got WebSocket data: {}'.format(msg.data))

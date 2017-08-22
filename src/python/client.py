@@ -31,3 +31,6 @@ class ConnectedClient:
 
   def __cmp__(self, other):
     return cmp(self.id, other.id)
+
+  def __repr__(self):
+    return 'Client(id={}, ip_address={}, sub_id={})'.format(self.id, self.ip_address, self.sub_id)

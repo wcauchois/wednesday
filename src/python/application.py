@@ -3,7 +3,7 @@ from aiohttp import web
 import jinja2
 import aiohttp_jinja2
 
-from views import RootView, WebSocketView
+from views import RootView, WebSocketView, DebugView
 from database import Database
 from pubsub import PubSub
 
@@ -11,8 +11,11 @@ from pubsub import PubSub
 app = web.Application()
 app.router.add_static('/dist', './dist')
 app.router.add_get('/ws', WebSocketView)
+app.router.add_get('/_debug', DebugView)
+
 # This should go last since it wildcard matches on any route.
 app.router.add_get('/{rest:.*}', RootView)
+
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 
 app['clients'] = set()

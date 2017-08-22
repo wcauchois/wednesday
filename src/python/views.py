@@ -7,12 +7,24 @@ import aiohttp_jinja2
 from client import ConnectedClient, ResponseType
 from rpc import RpcMethods, RpcException
 from utils import get_ip_address_from_request
+from io import StringIO
 
 
 class RootView(web.View):
   @aiohttp_jinja2.template('index.html')
   async def get(self):
     return {} # Template params
+
+
+class DebugView(web.View):
+  async def get(self):
+    app = self.request.app
+    with StringIO() as file:
+      print('Clients:', file=file)
+      for client in app['clients']:
+        print('  {}'.format(client), file=file)
+      app['ps'].print_debug_info(file)
+      return web.Response(text=file.getvalue())
 
 
 class WebSocketView(web.View):

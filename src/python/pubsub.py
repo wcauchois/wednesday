@@ -74,3 +74,9 @@ class PubSub:
 
   def format_channel_name(self, post_id):
     return self.channel_prefix + str(post_id)
+
+  def print_debug_info(self, file):
+    print('PubSub(channel_prefix={}):'.format(self.channel_prefix), file=file)
+    print('  Subscriptions:', file=file)
+    for (key, value) in self.subs.items():
+      print('    {}: {}'.format(key, [v.id for v in value]), file=file)

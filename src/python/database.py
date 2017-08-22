@@ -4,13 +4,14 @@ from sqlalchemy.sql import select, func
 
 from models import Post, post_table
 from utils import get_db_url
+from service import Service
 
 
 class DatabaseException(Exception):
   pass
 
 
-class Database:
+class Database(Service):
   MAX_SUBTREE_DEPTH = 100
 
   def __init__(self, app, db_url=None, loop=None):

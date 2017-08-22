@@ -5,13 +5,14 @@ from collections import defaultdict
 
 from client import ResponseType
 from utils import get_db_url
+from service import Service
 
 
 class PubSubException(Exception):
   pass
 
 
-class PubSub:
+class PubSub(Service):
   def __init__(self, app, db_url=None, channel_prefix="pubsub_", loop=None):
     self.app = app
     self.loop = loop or asyncio.get_event_loop()
@@ -75,7 +76,7 @@ class PubSub:
   def format_channel_name(self, post_id):
     return self.channel_prefix + str(post_id)
 
-  def print_debug_info(self, file):
+  async def print_debug_info(self, file):
     print('PubSub(channel_prefix={}):'.format(self.channel_prefix), file=file)
     print('  Subscriptions:', file=file)
     for (key, value) in self.subs.items():

@@ -2,12 +2,13 @@ import asyncio
 import json
 import logging
 from aiohttp import web, WSMsgType, WSCloseCode
+from io import StringIO
 import aiohttp_jinja2
 
 from client import ConnectedClient, ResponseType
 from rpc import RpcMethods, RpcException
 from utils import get_ip_address_from_request
-from io import StringIO
+import application
 
 
 class RootView(web.View):
@@ -23,7 +24,8 @@ class DebugView(web.View):
       print('Clients:', file=file)
       for client in app['clients']:
         print('  {}'.format(client), file=file)
-      app['ps'].print_debug_info(file)
+      for service in application.services.values():
+        await service.print_debug_info(file)
       return web.Response(text=file.getvalue())
 
 

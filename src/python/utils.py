@@ -31,6 +31,6 @@ def get_db_url():
 def remove_null_values(d):
   ret = dict(d)
   for (key, value) in d.items():
-    if ret[key] is None:
+    if ret[key] is None or ret[key] is False:
       del ret[key]
   return ret

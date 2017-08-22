@@ -1,5 +1,6 @@
 from models import Post, post_table
 from client import ConnectedClient, ResponseType
+import render
 
 
 class RpcException(Exception):
@@ -23,6 +24,11 @@ class RpcMethods:
   @staticmethod
   async def will_always_throw(app, client, args):
     raise RpcException('This is an exception!')
+
+  @staticmethod
+  async def get_tree(app, client, args):
+    posts = await app['db'].get_subtree(args[0])
+    return [render.post(p) for p in posts]
 
   @staticmethod
   async def add_post(app, client, args):

@@ -14,12 +14,4 @@ class Post(Base):
   content = sa.Column(sa.Text)
   ip_address = sa.Column(sa.String(128))
 
-  def to_json(self):
-    return remove_null_values({
-      'id': self.id,
-      'created': self.created and unix_time_seconds(self.created),
-      'parent_id': self.parent_id,
-      'content': self.content
-    })
-
 post_table = Post.__table__

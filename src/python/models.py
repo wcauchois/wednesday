@@ -13,5 +13,6 @@ class Post(Base):
                         sa.ForeignKey("posts.id"))
   content = sa.Column(sa.Text)
   ip_address = sa.Column(sa.String(128))
+  score = sa.Column(sa.Float)
 
 post_table = Post.__table__

@@ -26,7 +26,7 @@ services = {
 def get_sorted_services():
   return sorted(services.values(), key=lambda s: s.init_order)
 
-app['clients'] = set()
+app['clients'] = {}
 app.update(services)
 
 async def on_startup(app):
@@ -35,7 +35,7 @@ async def on_startup(app):
 
 # http://aiohttp.readthedocs.io/en/stable/web.html#graceful-shutdown
 async def on_shutdown(app):
-  await asyncio.gather(*[client.close() for client in app['clients']])
+  await asyncio.gather(*[client.close() for client in app['clients'].values()])
   for service in reversed(get_sorted_services()):
     await service.shutdown()
 

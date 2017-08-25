@@ -1,3 +1,4 @@
+import sys
 import asyncio
 import json
 import logging
@@ -5,7 +6,7 @@ from aiohttp import web, WSMsgType, WSCloseCode
 from io import StringIO
 import aiohttp_jinja2
 
-from client import ConnectedClient, ResponseType
+from client import BasicClient, AuthenticatedClient, ResponseType
 from rpc import RpcMethods, RpcException
 from utils import get_ip_address_from_request
 import application
@@ -32,42 +33,46 @@ class DebugView(web.View):
 class WebSocketView(web.View):
   async def handle_rpc_call(self, payload):
     method_name = payload['method']
-    call_id = payload['call_id']
     arguments = payload.get('arguments', [])
-    func = getattr(RpcMethods, method_name)
+    response = {'call_id' : payload['call_id']}
+    res_type = ResponseType.RPC_ERROR
     try:
-      if func is not None:
-        ret = await func(self.request.app, self.client, arguments)
-        response = {'return_value': json.dumps(ret)}
-        res_type = ResponseType.RPC_SUCCESS
+      func = getattr(RpcMethods, method_name)
+    except AttributeError:
+      response['message'] = 'Unknown method: {}'.format(method_name)
+    else:
+      try:
+        ret = await func(self.request.app, self, arguments)
+      except RpcException as e:
+        response['message'] = str(e)
+      except:
+        response['message'] = 'SERVER ERROR'
+        import traceback
+        traceback.print_exc()
       else:
-        raise RpcException('Unknown method: {}'.format(method_name))
-    except RpcException as e:
-      logging.exception('RPC exception') # Prints traceback
-      response = {'message': str(e)}
-      res_type = ResponseType.RPC_ERROR
-    response['call_id'] = call_id
-    return (await self.client.send(res_type, response))
+        response['return_value'] = json.dumps(ret)
+        res_type = ResponseType.RPC_SUCCESS
+    finally:
+      return (await self.client.send(res_type, response))
 
   async def get(self):
-    logger = self.request.app.logger
-    ws = web.WebSocketResponse()
-    await ws.prepare(self.request)
-    logger.info('WebSocket client connected')
-    self.client = ConnectedClient(ws)
-    self.client.ip_address = get_ip_address_from_request(self.request)
-    self.request.app['clients'].add(self.client)
-    # Could get variables from session here for auth etc
-    async for msg in ws:
+    self.logger = self.request.app.logger
+    self.websocket = web.WebSocketResponse()
+    self.client = BasicClient(self.websocket)
+    await self.websocket.prepare(self.request)
+    self.logger.info('WebSocket client connected')
+    async for msg in self.websocket:
       if msg.type == WSMsgType.TEXT:
-        logger.info('Got WebSocket data: {}'.format(msg.data))
+        self.logger.info('Got WebSocket data: {}'.format(msg.data))
         payload = json.loads(msg.data)
         if payload['type'] == 'rpc':
           response = await self.handle_rpc_call(payload)
-          logger.info('Sending WebSocket data: {}'.format(response))
+          self.logger.info('Sending WebSocket data: {}'.format(response))
       elif msg.type == WSMsgType.ERROR:
-        logger.error('WebSocket error: {}'.format(ws.exception()))
-    logger.info('WebSocket connection closed')
-    await self.request.app['ps'].unsubscribe(self.client)
-    self.request.app['clients'].remove(self.client)
-    return ws
+        self.logger.error('WebSocket error: {}'.format(self.websocket.exception()))
+    else:
+      self.logger.info('WebSocket connection closed')
+      if self.client.authenticated:
+        await self.request.app['ps'].unsubscribe(self.client)
+        del self.request.app['clients'][self.client.id]
+    return self.websocket

@@ -8,7 +8,7 @@ def unix_time_seconds(dt):
   return int(dt.timestamp())
 
 def get_uuid():
-  return uuid.uuid1()
+  return str(uuid.uuid1())
 
 def anonymize_string(s, nchars=8):
   m = hashlib.md5()

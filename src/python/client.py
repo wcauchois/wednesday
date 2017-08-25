@@ -14,12 +14,13 @@ class ResponseType(Enum):
   UPDATE_GRAPH  = 'update_graph'
 
 
-class ConnectedClient:
-  def __init__(self, socket):
-    self.id = get_uuid()
+class BasicClient:
+  def __init__(self, socket, id=None):
+    self.id = id or get_uuid()
     self.socket = socket
     self.ip_address = None
     self.sub_id = None
+    self.authenticated = False
 
   async def send(self, res_type, response):
     response['type'] = res_type.value
@@ -33,4 +34,11 @@ class ConnectedClient:
     return cmp(self.id, other.id)
 
   def __repr__(self):
-    return 'Client(id={}, ip_address={}, sub_id={})'.format(self.id, self.ip_address, self.sub_id)
+    return '{}(id={}, ip_address={}, sub_id={})' \
+      .format(self.__class__.__name__, self.id, self.ip_address, self.sub_id)
+
+
+class AuthenticatedClient(BasicClient):
+  def __init__(self, socket, id=None):
+    super().__init__(socket, id=id)
+    self.authenticated = True

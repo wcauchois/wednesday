@@ -65,15 +65,15 @@ class RpcMethods:
     return {'client_id': str(view.client.id)}        
 
   @staticmethod
-  @pass_args0_as_kwargs
   @require_authentication
+  @pass_args0_as_kwargs
   async def get_tree(app, view, id=None):
     posts = await app['db'].get_subtree(id)
     return [render.post(p) for p in posts]
 
   @staticmethod
-  @pass_args0_as_kwargs
   @require_authentication
+  @pass_args0_as_kwargs
   async def add_post(app, view, parent_id=None,
                      content=None, ip_address=None):
     res = await app['db'].insert_post(parent_id=parent_id,
@@ -82,8 +82,8 @@ class RpcMethods:
     return res
 
   @staticmethod
-  @pass_args0_as_kwargs
   @require_authentication
+  @pass_args0_as_kwargs
   async def subscribe(app, view, id=None):
     await app['ps'].unsubscribe(view.client)
     view.client.sub_id = id

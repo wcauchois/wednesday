@@ -43,7 +43,6 @@ class Transport {
 
     // ID from server
     this.client_id = undefined;
-    this.call.handshake({client_id: this.client_id}).then((res) => this.client_id = res.client_id);
   }
 
   getWebSocketUrl() {
@@ -120,6 +119,8 @@ class Transport {
   }
 
   onOpen(event) {
+    // Handshake with server (in the future this can be an auth process)
+    this.call.handshake({client_id: this.client_id}).then((res) => this.client_id = res.client_id);
     this.executeQueuedRpcs();
   }
 

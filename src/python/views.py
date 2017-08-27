@@ -5,6 +5,7 @@ import logging
 from aiohttp import web, WSMsgType, WSCloseCode
 from io import StringIO
 import aiohttp_jinja2
+import traceback
 
 from client import BasicClient, AuthenticatedClient, ResponseType
 from rpc import RpcMethods, RpcException
@@ -45,9 +46,9 @@ class WebSocketView(web.View):
         ret = await func(self.request.app, self, arguments)
       except RpcException as e:
         response['message'] = str(e)
+        traceback.print_exc()
       except:
         response['message'] = 'SERVER ERROR'
-        import traceback
         traceback.print_exc()
       else:
         response['return_value'] = json.dumps(ret)

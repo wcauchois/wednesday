@@ -56,6 +56,7 @@ class PostComponent extends Component {
           {this.props.post.content}
         </div>
       </div>
+      {this.props.focused && <AddPost />}
     </div>
   }
 }
@@ -111,10 +112,7 @@ class AddPostComponent extends Component {
   }
 
   render() {
-    const button_text = "Add Post" + (this.props.focused_post_id
-        ? " (replying to post_id = " + this.props.focused_post_id + ")"
-        : ""
-    );
+    const button_text = "Add Post (replying to post_id = " + this.props.focused_post_id + ")";
     return <div className="add-post">
       <div className="textarea">
         <textarea value={this.state.content} onChange={this.handleTextareaChange.bind(this)} />
@@ -154,7 +152,6 @@ class HomeComponent extends Component {
         {this.props.roots.map((root, id) =>
           <PostTree key={id} root={root} />
         )} 
-        <AddPost />
       </div>
     </div>;
   }
@@ -163,6 +160,7 @@ class HomeComponent extends Component {
   componentDidMount() {
     Transport.call.get_toplevels().then(res => {
       for (const post of res) {
+        Transport.call.subscribe({id: post.id});
         Transport.call.get_tree({id: post.id}).then(res => {
           store.dispatch(actions.addTree(res));
         });

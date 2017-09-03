@@ -34,3 +34,9 @@ def remove_null_values(d):
     if ret[key] is None or ret[key] is False:
       del ret[key]
   return ret
+
+def log_short(stringable, N=250):
+  s = str(stringable)
+  if len(s) > N:
+    return s[:N//2] + "..." + s[-N//2:]
+  return s

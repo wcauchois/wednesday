@@ -15,7 +15,7 @@ class Database(Service):
   MAX_SUBTREE_DEPTH = 100
 
   def __init__(self, app, db_url=None, loop=None):
-    self.app = app
+    super().__init__(app)
     self.loop = loop or asyncio.get_event_loop()
     self.db_url = db_url or get_db_url()
     self.engine = None

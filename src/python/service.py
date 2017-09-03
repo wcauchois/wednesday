@@ -1,4 +1,11 @@
+from contextlib import contextmanager
+import traceback
+
+
 class Service:
+  def __init__(self, app):
+    self.app = app
+
   @property
   def init_order(self):
     """
@@ -15,3 +22,11 @@ class Service:
 
   async def print_debug_info(self, file):
     pass
+
+  @contextmanager
+  def log_exception(self):
+    try:
+      yield
+    except:
+      self.app.logger.error("got exception!")
+      traceback.print_exc() 

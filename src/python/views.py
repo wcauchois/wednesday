@@ -9,7 +9,7 @@ import traceback
 
 from client import BasicClient, AuthenticatedClient, ResponseType
 from rpc import RpcMethods, RpcException
-from utils import get_ip_address_from_request
+from utils import get_ip_address_from_request, log_short
 import application
 
 
@@ -64,16 +64,16 @@ class WebSocketView(web.View):
     self.logger.info('WebSocket client connected')
     async for msg in self.websocket:
       if msg.type == WSMsgType.TEXT:
-        self.logger.info('Got WebSocket data: {}'.format(msg.data))
+        self.logger.info('Got WebSocket data: {}'.format(log_short(msg.data)))
         payload = json.loads(msg.data)
         if payload['type'] == 'rpc':
           response = await self.handle_rpc_call(payload)
-          self.logger.info('Sending WebSocket data: {}'.format(response))
+          self.logger.info('Sending WebSocket data: {}'.format(log_short(response)))
       elif msg.type == WSMsgType.ERROR:
         self.logger.error('WebSocket error: {}'.format(self.websocket.exception()))
     else:
       self.logger.info('WebSocket connection closed')
       if self.client.authenticated:
-        await self.request.app['ps'].unsubscribe(self.client)
+        await self.request.app['ps'].unsubscribe_all(self.client)
         del self.request.app['clients'][self.client.id]
     return self.websocket

@@ -10,8 +10,7 @@ class ResponseType(Enum):
   TEST          = 'test'
   RPC_SUCCESS   = 'rpc_success'
   RPC_ERROR     = 'rpc_error'
-  SYNC_GRAPH    = 'sync_graph'
-  UPDATE_GRAPH  = 'update_graph'
+  SUB_NEW_POST  = 'sub_new_post'
 
 
 class BasicClient:
@@ -19,7 +18,7 @@ class BasicClient:
     self.id = id or get_uuid()
     self.socket = socket
     self.ip_address = None
-    self.sub_id = None
+    self.subbed_ids = set()
     self.authenticated = False
 
   async def send(self, res_type, response):
@@ -30,12 +29,22 @@ class BasicClient:
   async def close(self):
     await self.socket.close(code=WSCloseCode.GOING_AWAY)
 
+  def subscriptions(self):
+    return self.subbed_ids
+
+  def add_subscription(self, post_id):
+    self.subbed_ids.add(post_id)
+
+  def remove_subscription(self, post_id):
+    if post_id in self.subbed_ids:
+      self.subbed_ids.remove(post_id)
+
   def __cmp__(self, other):
     return cmp(self.id, other.id)
 
   def __repr__(self):
-    return '{}(id={}, ip_address={}, sub_id={})' \
-      .format(self.__class__.__name__, self.id, self.ip_address, self.sub_id)
+    return '{}(id={}, ip_address={})' \
+      .format(self.__class__.__name__, self.id, self.ip_address)
 
 
 class AuthenticatedClient(BasicClient):

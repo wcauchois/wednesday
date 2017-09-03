@@ -4,6 +4,7 @@ import render
 from models import Post, post_table
 from client import AuthenticatedClient, ResponseType
 from utils import get_ip_address_from_request
+from pubsub import PubSubException
 
 
 class RpcException(Exception):
@@ -90,6 +91,20 @@ class RpcMethods:
   @require_authentication
   @pass_args0_as_kwargs
   async def subscribe(app, view, id=None):
-    await app['ps'].unsubscribe(view.client)
-    view.client.sub_id = id
-    await app['ps'].subscribe(view.client)
+    try:
+      await app['ps'].subscribe(id, view.client)
+    except PubSubException as e:
+      raise RpcException(e)
+    else:
+      return {"message": "successfully subscribed to id={}".format(id)}
+    
+  @staticmethod
+  @require_authentication
+  @pass_args0_as_kwargs
+  async def unsubscribe(app, view, id=None):
+    try:
+      await app['ps'].unsubscribe(id, view.client)
+    except PubSubException as e:
+      raise RpcException(e)
+    else:
+      return {"message": "successfully unsubscribed from id={}".format(id)}

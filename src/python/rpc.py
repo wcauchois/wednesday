@@ -91,20 +91,12 @@ class RpcMethods:
   @require_authentication
   @pass_args0_as_kwargs
   async def subscribe(app, view, id=None):
-    try:
-      await app['ps'].subscribe(id, view.client)
-    except PubSubException as e:
-      raise RpcException(e)
-    else:
-      return {"message": "successfully subscribed to id={}".format(id)}
+    await app['ps'].subscribe(id, view.client)
+    return {"message": "successfully subscribed to id={}".format(id)}
     
   @staticmethod
   @require_authentication
   @pass_args0_as_kwargs
   async def unsubscribe(app, view, id=None):
-    try:
-      await app['ps'].unsubscribe(id, view.client)
-    except PubSubException as e:
-      raise RpcException(e)
-    else:
-      return {"message": "successfully unsubscribed from id={}".format(id)}
+    await app['ps'].unsubscribe(id, view.client)
+    return {"message": "successfully unsubscribed from id={}".format(id)}

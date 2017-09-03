@@ -6,10 +6,10 @@ import traceback
 
 from client import ResponseType
 from utils import get_db_url
-from service import Service
+from service import Service, ServiceException
 
 
-class PubSubException(Exception):
+class PubSubException(ServiceException):
   pass
 
 

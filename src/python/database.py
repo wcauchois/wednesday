@@ -4,10 +4,10 @@ from sqlalchemy.sql import select, func
 
 from models import Post, post_table
 from utils import get_db_url
-from service import Service
+from service import Service, ServiceException
 
 
-class DatabaseException(Exception):
+class DatabaseException(ServiceException):
   pass
 
 

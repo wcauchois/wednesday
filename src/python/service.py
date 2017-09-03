@@ -2,6 +2,10 @@ from contextlib import contextmanager
 import traceback
 
 
+class ServiceException(Exception):
+  pass
+
+
 class Service:
   def __init__(self, app):
     self.app = app

@@ -7,10 +7,11 @@ from io import StringIO
 import aiohttp_jinja2
 import traceback
 
+import application
+from service import ServiceException
 from client import BasicClient, AuthenticatedClient, ResponseType
 from rpc import RpcMethods, RpcException
 from utils import get_ip_address_from_request, log_short
-import application
 
 
 class RootView(web.View):
@@ -44,7 +45,7 @@ class WebSocketView(web.View):
     else:
       try:
         ret = await func(self.request.app, self, arguments)
-      except RpcException as e:
+      except (RpcException, ServiceException) as e:
         response['message'] = str(e)
         traceback.print_exc()
       except:

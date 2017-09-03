@@ -3,7 +3,6 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import {parseJsonPromise} from 'Utils';
 import store from 'config/store';
 import {setPostGraph, updatePostGraph} from 'actions';
-import {GraphStore, Node} from 'graph-store';
 
 const RPC_TIMEOUT = 5000;
 
@@ -134,14 +133,6 @@ class Transport {
       } else {
         console.error(`Warning: Got response for RPC we didn't initiate`, payload);
       }
-    } else if (payload.type === 'sync_graph') {
-      // NOTE(wcauchois): Graph stuff should probably be handled somewhere else, maybe make
-      // this an EventEmitter and then have something else listen to that.
-      store.dispatch(setPostGraph(
-        new GraphStore(Node.deserialize(payload.graph))
-      ));
-    } else if (payload.type === 'update_graph') {
-      store.dispatch(updatePostGraph(payload.ops));
     }
   }
 

@@ -12,7 +12,7 @@ def get_uuid():
 
 def anonymize_string(s, nchars=8):
   m = hashlib.md5()
-  m.update(s.encode('utf-8'))
+  m.update(str(s).encode('utf-8'))
   return b64encode(m.digest()).decode('utf-8')[:nchars]
 
 def get_ip_address_from_request(req):

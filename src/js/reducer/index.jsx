@@ -1,11 +1,10 @@
-import {TEST_ACTION, ADD_POST, SET_POSTS, SET_POST_GRAPH, UPDATE_POST_GRAPH, FOCUS_POST} from 'actions'
 import {Map, List} from 'immutable';
-import {GraphStore} from 'graph-store';
+import * as actions from 'actions';
+import {PostStore} from 'PostStore'; 
 
 const initialState = Map({
   counter: 0,
-  posts: List(),
-  post_graph: new GraphStore(),
+  post_store: new PostStore(),
   focused: undefined
 });
 
@@ -13,36 +12,32 @@ const actionsMap = {
   // N.B. [x] just means it uses the value of the variable "x" as the key in the map,
   // instead of the string "x".
 
-  [TEST_ACTION]: (state) => {
+  [actions.TEST_ACTION]: (state) => {
     return state.merge(Map({
       counter: state.get('counter') + 1
     }));
   },
 
-  [ADD_POST]: (state, action) => {
-    return state.update('posts', posts => posts.push(action.post));
+  [actions.ADD_ROOT]: (state, action) => {
+    return state.set('post_store', state.get('post_store').addRootFromValues(action.post_values));
   },
 
-  [SET_POSTS]: (state, action) => {
-    return state.set('posts', List(action.posts));
+  [actions.ADD_POST]: (state, action) => {
+    // NOTE(amstocker): should have callback for transport that updates the post
+    //                  state when it is confirmed by the server.
+    return state.set('post_store', state.get('post_store').addChildFromValues(action.post_values));
   },
 
-  [SET_POST_GRAPH]: (state, action) => {
-    return state.set('post_graph', action.graph);
+  [actions.ADD_TREE]: (state, action) => {
+    return state.set('post_store', state.get('post_store').addTreeFromValues(action.posts_values));
   },
 
-  [UPDATE_POST_GRAPH]: (state, action) => {
-    return state.set('post_graph', state.get('post_graph').apply(action.ops));
-  },
-
-  [FOCUS_POST]: (state, action) => {
+  [actions.FOCUS_POST]: (state, action) => {
     return state.set('focused', action.post_id);
   },
 };
 
 export default function reducer(state = initialState, action = {}) {
   const fn = actionsMap[action.type];
-  const tmp = fn ? fn(state, action) : state;
-  console.debug(tmp);
-  return tmp;
+  return fn ? fn(state, action) : state;
 }

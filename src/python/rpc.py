@@ -73,6 +73,11 @@ class RpcMethods:
 
   @staticmethod
   @require_authentication
+  async def get_toplevels(app, view, args):
+    return [render.post(p) for p in (await app['db'].get_toplevels())]
+
+  @staticmethod
+  @require_authentication
   @pass_args0_as_kwargs
   async def add_post(app, view, parent_id=None,
                      content=None, ip_address=None):

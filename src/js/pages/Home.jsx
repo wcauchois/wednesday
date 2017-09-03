@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
-import {addPost, setPosts, focusPost} from 'actions';
-import Transport from 'Transport';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
-import {pickColorFromString, nbsp} from 'Utils';
 import classNames from 'classnames';
+
+import * as actions from 'actions';
+import {pickColorFromString, nbsp} from 'Utils';
+import Transport from 'Transport';
 
 
 class PostComponent extends Component {
@@ -68,11 +69,26 @@ const Post = connect(
   dispatch => {
     return {
       focusPost: id => {
-        dispatch(focusPost(id));
+        dispatch(actions.focusPost(id));
       }
     };
   }
 )(PostComponent);
+
+
+class PostTreeComponent extends Component {
+  render() {
+    return <div className="post-node">
+      <Post post={this.props.root} />
+      {this.props.root.children.map((child, id) =>
+        <PostTreeComponent key={id} root={child} /> 
+      )}
+    </div>;
+  }
+}
+
+const PostTree = connect()(PostTreeComponent);
+
 
 class AddPostComponent extends Component {
   constructor(props) {
@@ -121,33 +137,13 @@ const AddPost = connect(
       addPost: post => {
         dispatch(async function(dispatch) {
           const postFromServer = await Transport.call.add_post(post);
-          dispatch(addPost(postFromServer));
+          dispatch(actions.addPost(postFromServer));
         });
       }
     };
   }
 )(AddPostComponent);
 
-class PostTreeComponent extends Component {
-  render() {
-    const root = this.props.root;
-    const children = root.children
-                            .toArray()
-                            .sort((x, y) => x.value.created - y.value.created);
-    return <div className="post-node">
-      {(root.id >= 0) && <Post post={root.value} />}
-      {children.map(child =>
-        <PostTreeComponent key={child.value.id} root={child} /> 
-      )}
-    </div>;
-  }
-}
-
-const PostTree = connect(
-  state => {
-    return {root: state.get('post_graph').rootNode}
-  }
-)(PostTreeComponent);
 
 class HomeComponent extends Component {
   render() {
@@ -155,13 +151,30 @@ class HomeComponent extends Component {
       This is the index page.<br />
       <Link to="/about">About page</Link><br />
       <div>
-        <PostTree />
+        {this.props.roots.map((root, id) =>
+          <PostTree key={id} root={root} />
+        )} 
         <AddPost />
       </div>
     </div>;
   }
+
+  // NOTE(amstocker): this is just a temporary way to show all posts
+  componentDidMount() {
+    Transport.call.get_toplevels().then(res => {
+      for (const post of res) {
+        Transport.call.get_tree({id: post.id}).then(res => {
+          store.dispatch(actions.addTree(res));
+        });
+      }
+    });
+  }
 }
 
-const Home = connect()(HomeComponent);
+const Home = connect(
+  state => {
+    return {roots: state.get('post_store').roots}
+  }
+)(HomeComponent);
 
 export default Home;

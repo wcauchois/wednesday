@@ -6,6 +6,5 @@ def post(post):
     'created': ('created' in post) and unix_time_seconds(post['created']),
     'parent_id': post.get('parent_id'),
     'content': post.get('content'),
-    'anonymized_author_identifier': \
-      ('ip_address' in post) and anonymize_string(post['ip_address'])
+    'anonymized_author_identifier': anonymize_string(post.get('ip_address'))
   })

@@ -44,3 +44,10 @@ class Database(Service):
         )
       )
       return [dict(row) async for row in res]
+
+  async def get_toplevels(self):
+    async with self.engine.acquire() as conn:
+      res = await conn.execute(
+        post_table.select().where(post_table.c.parent_id == None)
+      )
+      return [dict(row) async for row in res]

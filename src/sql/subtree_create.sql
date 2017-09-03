@@ -1,5 +1,4 @@
-
-CREATE FUNCTION subtree(parent integer, max_depth integer)
+CREATE OR REPLACE FUNCTION subtree(parent integer, max_depth integer)
 RETURNS SETOF posts AS
 $$
   WITH RECURSIVE subtree(id, created, parent_id, content, ip_address, depth) AS (

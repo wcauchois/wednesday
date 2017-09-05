@@ -1,8 +1,9 @@
+import moment from 'moment';
 import shortid from 'shortid';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {parseJsonPromise} from 'Utils';
 import store from 'config/store';
-import {setPostGraph, updatePostGraph} from 'actions';
+import * as actions from 'actions';
 
 const RPC_TIMEOUT = 5000;
 
@@ -134,7 +135,13 @@ class Transport {
         console.error(`Warning: Got response for RPC we didn't initiate`, payload);
       }
     } else {
-      // reduce server action
+      // this ideally should be in some other file
+      if (payload.type === "sub_new_post") {
+        // NOTE(amstocker): For some reason postgresql's json function (used in the pubsub)
+        //                  converts from unix timestamp to a datetime
+        payload.post.created = moment.utc(payload.post.created).unix();
+        store.dispatch(actions.addPost(payload.post));
+      }
     }
   }
 

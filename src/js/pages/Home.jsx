@@ -22,7 +22,7 @@ class PostComponent extends Component {
 
   render() {
     const created = moment.unix(this.props.post.created);
-    const absoluteTimestamp = created.format('MM/DD/YY(ddd)HH:mm:ss');
+    const absoluteTimestamp = created.format('MMMM Do YYYY, h:mm:ss a');
     const relativeTimestamp = created.fromNow();
     let authorId;
     if (this.props.post.anonymized_author_identifier) {
@@ -46,8 +46,8 @@ class PostComponent extends Component {
             <li className="author">
               Anonymous
             </li>
-            <li className="timestamp" title={relativeTimestamp}>
-              {absoluteTimestamp}
+            <li className="timestamp" title={absoluteTimestamp}>
+              {relativeTimestamp}
             </li>
             {authorId}
           </ul>
@@ -103,7 +103,7 @@ class AddPostComponent extends Component {
 
   submitButtonClicked() {
     if (this.state.content) {
-      this.props.addPost({
+      this.props.newPost({
         parent_id: this.props.focused_post_id,
         content: this.state.content
       });
@@ -132,12 +132,7 @@ const AddPost = connect(
   },
   dispatch => {
     return {
-      addPost: post => {
-        dispatch(async function(dispatch) {
-          const postFromServer = await Transport.call.add_post(post);
-          dispatch(actions.addPost(postFromServer));
-        });
-      }
+      newPost: (post_values) => dispatch(actions.newPost(post_values))
     };
   }
 )(AddPostComponent);

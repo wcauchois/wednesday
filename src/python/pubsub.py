@@ -71,7 +71,10 @@ class PubSub(Service):
           await self.to_unlisten.put(None)
           break
         else:          
-          payload = json.loads(msg.payload)
+          payload = {
+            "post": json.loads(msg.payload),
+            "subscription_id": int(msg.channel.split(self.channel_prefix)[1])
+          }
           await asyncio.gather(*[client.send(ResponseType.SUB_NEW_POST, payload) for client in self.subs[msg.channel]])
 
   async def subscribe(self, post_id, client):

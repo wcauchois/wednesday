@@ -23,10 +23,7 @@ const actionsMap = {
   },
 
   [actions.ADD_POST]: (state, action) => {
-    // NOTE(amstocker): should have callback for transport that updates the post
-    //                  state when it is confirmed by the server.
-    //return state.set('post_store', state.get('post_store').addChildFromValues(action.post_values));
-    return state;
+    return state.set('post_store', state.get('post_store').addChildFromValues(action.post_values));
   },
 
   [actions.ADD_TREE]: (state, action) => {

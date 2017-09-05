@@ -13,8 +13,12 @@ export function addRoot(post) {
   };
 }
 
-// NOTE(amstocker): should prob differentiate between putting a new post
-//                  and getting existing posts instead of using 'add'.
+export function newPost(post_values) {
+  return async function(dispatch) {
+    const ret = await Transport.call.add_post(post_values);
+  };
+}
+
 export const ADD_POST = 'ADD_POST';
 export function addPost(post_values) {
   return {

@@ -31,7 +31,7 @@ class Service:
     pass
 
   @contextmanager
-  def log_exception():
+  def log_exception(self):
     try:
       yield
     except:

@@ -32,20 +32,20 @@ export class Post {
       return this.addChild(newChild);
     } else {
       let par = this.transitiveChildren.get(newChild.parent_id);
-      par.children = par.children.set(newChild.id, newChild);
-      
-      // traverse up tree to this node and re-index transitive children.
-      while (par && par.id > this.id) {
-        par.indexTransitiveChildren();
-        par = this.transitiveChildren.get(par.parent_id);
+      par = par.addChild(newChild);
+      let gpar = this.transitiveChildren.get(par.parent_id);
+      while (gpar) {  // traverse up sub tree
+        par = gpar.addChild(par);
+        gpar = this.transitiveChildren.get(par.parent_id);
       }
-      return new Post(this._values, this.children);
+      return this.addChild(par);
     }
+    
   }
 
   indexTransitiveChildren() {
     this.transitiveChildren = this.children.merge(
-      this.children.map(c => c.children).flatten(true));
+      this.children.map(c => c.transitiveChildren).flatten(true));
   }
 
   *flatView() {

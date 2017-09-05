@@ -133,6 +133,8 @@ class Transport {
       } else {
         console.error(`Warning: Got response for RPC we didn't initiate`, payload);
       }
+    } else {
+      // reduce server action
     }
   }
 

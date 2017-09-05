@@ -21,7 +21,7 @@ class PostComponent extends Component {
   }
 
   render() {
-    const created = moment.unix(this.props.post.created);
+    const created = moment.min(moment.unix(this.props.post.created), moment.utc());
     const absoluteTimestamp = created.format('MMMM Do YYYY, h:mm:ss a');
     const relativeTimestamp = created.fromNow();
     let authorId;

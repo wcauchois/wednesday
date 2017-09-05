@@ -1,5 +1,7 @@
+import asyncio
 from contextlib import contextmanager
-import traceback
+
+from utils import log_traceback
 
 
 class ServiceException(Exception):
@@ -7,8 +9,9 @@ class ServiceException(Exception):
 
 
 class Service:
-  def __init__(self, app):
+  def __init__(self, app, loop=None):
     self.app = app
+    self.loop = loop or asyncio.get_event_loop()
 
   @property
   def init_order(self):
@@ -28,9 +31,19 @@ class Service:
     pass
 
   @contextmanager
-  def log_exception(self):
+  def log_exception():
     try:
       yield
     except:
-      self.app.logger.error("got exception!")
-      traceback.print_exc() 
+      log_traceback(self.app.logger)
+
+  @staticmethod
+  def async_log_exception(async_method):
+    async def wrapper(self, *args, **kwargs):
+      try:
+        return (await async_method(self, *args, **kwargs))
+      except:
+        self.app.logger.error("{}.{} encountered an exception:".format(
+          self.__class__.__name__, async_method.__name__))
+        log_traceback(self.app.logger)
+    return wrapper

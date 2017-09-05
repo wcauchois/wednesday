@@ -1,6 +1,7 @@
 import yaml
 import hashlib
 import uuid
+import traceback
 from base64 import b64encode
 
 
@@ -40,3 +41,7 @@ def log_short(stringable, N=250):
   if len(s) > N:
     return s[:N//2] + "..." + s[-N//2:]
   return s
+
+def log_traceback(logger, indent=1):
+  for ln in traceback.format_exc().splitlines():
+    logger.error('\t' * indent + ln)

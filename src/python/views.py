@@ -5,13 +5,12 @@ import logging
 from aiohttp import web, WSMsgType, WSCloseCode
 from io import StringIO
 import aiohttp_jinja2
-import traceback
 
 import application
 from service import ServiceException
 from client import BasicClient, AuthenticatedClient, ResponseType
 from rpc import RpcMethods, RpcException
-from utils import get_ip_address_from_request, log_short
+from utils import get_ip_address_from_request, log_short, log_traceback
 
 
 class RootView(web.View):
@@ -47,10 +46,9 @@ class WebSocketView(web.View):
         ret = await func(self.request.app, self, arguments)
       except (RpcException, ServiceException) as e:
         response['message'] = str(e)
-        traceback.print_exc()
       except:
         response['message'] = 'SERVER ERROR'
-        traceback.print_exc()
+        log_traceback(self.logger)
       else:
         response['return_value'] = json.dumps(ret)
         res_type = ResponseType.RPC_SUCCESS

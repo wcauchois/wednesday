@@ -12,20 +12,19 @@ class DatabaseException(ServiceException):
 
 
 class Database(Service):
-  MAX_SUBTREE_DEPTH = 100
+  MAX_SUBTREE_DEPTH = 1000
 
   def __init__(self, app, db_url=None, loop=None):
-    super().__init__(app)
-    self.loop = loop or asyncio.get_event_loop()
+    super().__init__(app, loop=loop)
     self.db_url = db_url or get_db_url()
     self.engine = None
 
   async def startup(self):
+    await super().startup()
     self.engine = await create_engine(self.db_url)
-    return self
 
   async def shutdown(self):
-    pass
+    await super().shutdown()
 
   async def insert_post(self, parent_id, content=None, ip_address=None):
     async with self.engine.acquire() as conn:

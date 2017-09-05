@@ -15,8 +15,7 @@ class PubSubException(ServiceException):
 
 class PubSub(Service):
   def __init__(self, app, db_url=None, channel_prefix="pubsub_", loop=None):
-    super().__init__(app)
-    self.loop = loop or asyncio.get_event_loop()
+    super().__init__(app, loop=loop)
     self.db_url = db_url or get_db_url()
     self.engine = None
     self.channel_prefix = channel_prefix
@@ -28,51 +27,52 @@ class PubSub(Service):
     self._futures = []
 
   async def startup(self):
+    await super().startup()
     self.engine = await create_pool(self.db_url)
     self._futures.append(self.loop.create_task(self.listener()))
-    return self
 
   async def shutdown(self):
     if self._conn:
       await self._conn.notifies.put(None)
     await asyncio.gather(*self._futures)
+    await super().shutdown()
 
+  @Service.async_log_exception
   async def listen_helper(self, conn):
     while True:
-      with self.log_exception():
-        channel = await self.to_listen.get()
-        if channel is None:
-          break
-        async with self._lock:
-          async with conn.cursor() as cur:
-            await cur.execute("LISTEN {}".format(channel))
+      channel = await self.to_listen.get()
+      if channel is None:
+        break
+      async with self._lock:
+        async with conn.cursor() as cur:
+          await cur.execute("LISTEN {}".format(channel))
 
+  @Service.async_log_exception
   async def unlisten_helper(self, conn):
     while True:
-      with self.log_exception():
-        channel = await self.to_unlisten.get()
-        if channel is None:
-          break
-        async with self._lock:
-          async with conn.cursor() as cur:
-            await cur.execute("UNLISTEN {}".format(channel))
+      channel = await self.to_unlisten.get()
+      if channel is None:
+        break
+      async with self._lock:
+        async with conn.cursor() as cur:
+          await cur.execute("UNLISTEN {}".format(channel))
 
+  @Service.async_log_exception
   async def listener(self):
     async with self.engine.acquire() as conn:
       self._conn = conn
       self._futures.extend([self.loop.create_task(self.listen_helper(conn)),
                             self.loop.create_task(self.unlisten_helper(conn))])
       while True:
-        with self.log_exception():
-          msg = await conn.notifies.get()
-          if msg is None:
-            # attempt to close coros gracefully
-            await self.to_listen.put(None)
-            await self.to_unlisten.put(None)
-            break
-          else:          
-            payload = json.loads(msg.payload)
-            await asyncio.gather(*[client.send(ResponseType.SUB_NEW_POST, payload) for client in self.subs[msg.channel]])
+        msg = await conn.notifies.get()
+        if msg is None:
+          # attempt to close coros gracefully
+          await self.to_listen.put(None)
+          await self.to_unlisten.put(None)
+          break
+        else:          
+          payload = json.loads(msg.payload)
+          await asyncio.gather(*[client.send(ResponseType.SUB_NEW_POST, payload) for client in self.subs[msg.channel]])
 
   async def subscribe(self, post_id, client):
     if not type(post_id) is int:

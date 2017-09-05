@@ -80,12 +80,9 @@ class RpcMethods:
   @staticmethod
   @require_authentication
   @pass_args0_as_kwargs
-  async def add_post(app, view, parent_id=None,
-                     content=None, ip_address=None):
-    res = await app['db'].insert_post(parent_id=parent_id,
-                                      content=content,
-                                      ip_address=ip_address)
-    return res
+  async def add_post(app, view, parent_id=None, content=None):
+    return (await app['db'].insert_post(parent_id=parent_id, content=content,
+                                        ip_address=view.client.ip_address))
 
   @staticmethod
   @require_authentication

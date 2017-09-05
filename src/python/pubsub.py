@@ -4,6 +4,7 @@ from aiopg import create_pool
 from collections import defaultdict
 import traceback
 
+import render
 from client import ResponseType
 from utils import get_db_url
 from service import Service, ServiceException
@@ -72,7 +73,7 @@ class PubSub(Service):
           break
         else:          
           payload = {
-            "post": json.loads(msg.payload),
+            "post": render.post(json.loads(msg.payload)),
             "subscription_id": int(msg.channel.split(self.channel_prefix)[1])
           }
           await asyncio.gather(*[client.send(ResponseType.SUB_NEW_POST, payload) for client in self.subs[msg.channel]])

@@ -58,9 +58,10 @@ class WebSocketView(web.View):
   async def get(self):
     self.logger = self.request.app.logger
     self.websocket = web.WebSocketResponse()
-    self.client = BasicClient(self.websocket)
+    self.client = BasicClient(self.websocket,
+                              ip_address=get_ip_address_from_request(self.request))
     await self.websocket.prepare(self.request)
-    self.logger.info('WebSocket client connected')
+    self.logger.info('WebSocket client connected from {}'.format(self.client.ip_address))
     async for msg in self.websocket:
       if msg.type == WSMsgType.TEXT:
         self.logger.info('Got WebSocket data: {}'.format(log_short(msg.data)))

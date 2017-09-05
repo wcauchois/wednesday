@@ -2,11 +2,18 @@ import yaml
 import hashlib
 import uuid
 import traceback
+from datetime import datetime
+from dateutil.parser import parse
 from base64 import b64encode
 
 
 def unix_time_seconds(dt):
-  return int(dt.timestamp())
+  if type(dt) is datetime:
+    return int(dt.timestamp())
+  elif type(dt) is int:
+    return int(datetime(dt).timestamp())
+  else:
+    return int(parse(dt).timestamp())
 
 def get_uuid():
   return str(uuid.uuid1())

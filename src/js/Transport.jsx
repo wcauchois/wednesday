@@ -137,9 +137,6 @@ class Transport {
     } else {
       // this ideally should be in some other file
       if (payload.type === "sub_new_post") {
-        // NOTE(amstocker): For some reason postgresql's json function (used in the pubsub)
-        //                  converts from unix timestamp to a datetime
-        payload.post.created = moment.utc(payload.post.created).unix();
         store.dispatch(actions.addPost(payload.post));
       }
     }

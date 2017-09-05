@@ -14,10 +14,10 @@ class ResponseType(Enum):
 
 
 class BasicClient:
-  def __init__(self, socket, id=None):
+  def __init__(self, socket, id=None, ip_address=None):
     self.id = id or get_uuid()
     self.socket = socket
-    self.ip_address = None
+    self.ip_address = ip_address
     self.subbed_ids = set()
     self.authenticated = False
 

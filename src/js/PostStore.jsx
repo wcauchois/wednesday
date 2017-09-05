@@ -12,7 +12,8 @@ export class Post {
     this._values = values;
     this.children = Map(children);
     this.state = PostState.PENDING;
-    this.indexTransitiveChildren();
+    this.transitiveChildren = this.children.merge(
+      this.children.map(c => c.transitiveChildren).flatten(true));
   }
 
   hasInSubtree(child_id) {
@@ -34,18 +35,13 @@ export class Post {
       let par = this.transitiveChildren.get(newChild.parent_id);
       par = par.addChild(newChild);
       let gpar = this.transitiveChildren.get(par.parent_id);
-      while (gpar) {  // traverse up sub tree
+      while (gpar) {  // traverse up subtree
         par = gpar.addChild(par);
         gpar = this.transitiveChildren.get(par.parent_id);
       }
       return this.addChild(par);
     }
     
-  }
-
-  indexTransitiveChildren() {
-    this.transitiveChildren = this.children.merge(
-      this.children.map(c => c.transitiveChildren).flatten(true));
   }
 
   *flatView() {
@@ -82,8 +78,7 @@ export class PostStore {
   }
 
   addTree(posts) {
-    // NOTE(amstocker): should topologically sort these.  Also maybe do this shallowly
-    //                  instead of making new PostStores.
+    // NOTE(amstocker): should topologically sort these.
     let tmp_store = this.addRoot(posts[0]);
     for (const child of posts.slice(1)) {
       tmp_store = tmp_store.addChild(child);

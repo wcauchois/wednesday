@@ -111,11 +111,19 @@ class AddPostComponent extends Component {
     }
   }
 
+  handleTextareaKeyDown(event) {
+    // Cmd+enter
+    if (event.keyCode === 13 && event.metaKey) {
+      this.submitButtonClicked();
+    }
+  }
+
   render() {
     const button_text = "Add Post (replying to post_id = " + this.props.focused_post_id + ")";
     return <div className="add-post">
       <div className="textarea">
-        <textarea value={this.state.content} onChange={this.handleTextareaChange.bind(this)} />
+        <textarea value={this.state.content} onChange={this.handleTextareaChange.bind(this)}
+          onKeyDown={this.handleTextareaKeyDown.bind(this)} />
       </div>
       <div className="controls">
         <button onClick={this.submitButtonClicked.bind(this)}>{button_text}</button>

@@ -20,21 +20,31 @@ class PostComponent extends Component {
     this.props.focusPost(this.props.post.id);
   }
 
+  authorIdentifierStyle() {
+    const identifier = this.props.post.anonymized_author_identifier;
+    if (identifier) {
+      const bgColor = pickColorFromString(identifier);
+      const bgTinyColor = tinycolor({r: bgColor[0], g: bgColor[1], b: bgColor[2]});
+      const fgColorString = bgTinyColor.isLight() ? '#000' : '#fff';
+      const bgColorString = bgTinyColor.toRgbString();
+      return {
+        backgroundColor: bgColorString,
+        color: fgColorString
+      };
+    } else {
+      return {};
+    }
+  }
+
   render() {
     const created = moment.min(moment.unix(this.props.post.created), moment.utc());
     const absoluteTimestamp = created.format('MMMM Do YYYY, h:mm:ss a');
     const relativeTimestamp = created.fromNow();
     let authorId;
     if (this.props.post.anonymized_author_identifier) {
-      const identifier = this.props.post.anonymized_author_identifier;
-      const bgColor = pickColorFromString(identifier);
-      const bgTinyColor = tinycolor({r: bgColor[0], g: bgColor[1], b: bgColor[2]});
-      const fgColorString = bgTinyColor.isLight() ? '#000' : '#fff';
-      const bgColorString = bgTinyColor.toRgbString();
-      const style = {backgroundColor: bgColorString, color: fgColorString};
       authorId = <li className="authorId">
         ID:{nbsp}
-        <span className="authorIdSlug" style={style}>
+        <span className="authorIdSlug" style={this.authorIdentifierStyle()}>
           {this.props.post.anonymized_author_identifier}
         </span>
       </li>;

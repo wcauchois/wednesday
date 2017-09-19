@@ -33,6 +33,8 @@ body {
   .fontFamily();
 }
 
+body, html {margin: 0;}
+
 button {
   .fontFamily();
   background-color: @color-secondary-1-0;
@@ -48,11 +50,28 @@ button {
 }
 
 .add-post {
-  margin-top: 15px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: white;
 
-  .textarea textarea {
-    width: 350px;
+  .add-post-inner {
+    display: flex;
     height: 60px;
+    margin: 5px;
+
+    .controls {
+      width: 150px;
+
+      button {
+        height: 100%;
+      }
+    }
+
+    textarea {
+      flex-grow: 1;
+      margin-right: 5px;
+    }
   }
 }
 

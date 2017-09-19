@@ -66,7 +66,6 @@ class PostComponent extends Component {
           {this.props.post.content}
         </div>
       </div>
-      {this.props.focused && <AddPost />}
     </div>
   }
 }
@@ -129,14 +128,21 @@ class AddPostComponent extends Component {
   }
 
   render() {
-    const button_text = "Add Post (replying to post_id = " + this.props.focused_post_id + ")";
+    let button_text;
+    if (this.props.focused_post_id) {
+      button_text = `Add Post (replying to post_id = ${this.props.focused_post_id})`;
+    } else {
+      button_text = `Select a post to reply`;
+    }
     return <div className="add-post">
-      <div className="textarea">
+      <div className="add-post-inner">
         <textarea value={this.state.content} onChange={this.handleTextareaChange.bind(this)}
-          onKeyDown={this.handleTextareaKeyDown.bind(this)} />
-      </div>
-      <div className="controls">
-        <button onClick={this.submitButtonClicked.bind(this)}>{button_text}</button>
+          onKeyDown={this.handleTextareaKeyDown.bind(this)}
+          placeholder="Write something..." />
+        <div className="controls">
+          <button onClick={this.submitButtonClicked.bind(this)}
+            disabled={!this.props.focused_post_id}>{button_text}</button>
+        </div>
       </div>
     </div>;
   }
@@ -166,6 +172,7 @@ class HomeComponent extends Component {
           <PostTree key={id} root={root} />
         )} 
       </div>
+      <AddPost />
     </div>;
   }
 

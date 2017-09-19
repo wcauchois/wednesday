@@ -39,7 +39,7 @@ class PostComponent extends Component {
   render() {
     const created = moment.min(moment.unix(this.props.post.created), moment.utc());
     const absoluteTimestamp = created.format('MMMM Do YYYY, h:mm:ss a');
-    const relativeTimestamp = created.fromNow();
+    const relativeTimestamp = created.from(this.props.now);
     let authorId;
     if (this.props.post.anonymized_author_identifier) {
       authorId = <li className="authorId">
@@ -73,7 +73,8 @@ class PostComponent extends Component {
 const Post = connect(
   (state, ownProps) => {
     return {
-      focused: ownProps.post.id === state.get('focused')
+      focused: ownProps.post.id === state.get('focused'),
+      now: state.get('timestamp'),
     }
   },
   dispatch => {

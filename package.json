@@ -12,6 +12,7 @@
     "babel-polyfill": "^6.23.0",
     "classnames": "^2.2.5",
     "es6-promise": "^4.1.1",
+    "event-emitter-es6": "^1.1.5",
     "immutable": "^3.8.1",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.18.1",

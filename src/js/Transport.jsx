@@ -4,6 +4,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import {parseJsonPromise} from 'Utils';
 import store from 'config/store';
 import * as actions from 'actions';
+import EventEmitter from 'event-emitter-es6';
 
 const RPC_TIMEOUT = 5000;
 
@@ -24,8 +25,10 @@ class QueuedRpc {
   }
 }
 
-class Transport {
+class Transport extends EventEmitter {
   constructor() {
+    super();
+
     window.onbeforeunload = () => this.disconnect();
     this.unresolvedRpcs = {};
     this.connect();
@@ -125,21 +128,25 @@ class Transport {
   }
 
   onMessage(event) {
-    const payload = JSON.parse(event.data);
-    console.log('Got message from server:', payload);
-    if (/rpc_(error|success)/.test(payload.type)) {
-      const callId = payload.call_id;
-      if (callId in this.unresolvedRpcs) {
-        this.unresolvedRpcs[callId](payload);
+    parseJsonPromise(event.data).then((payload) => {
+      console.log('Got message from server:', payload);
+      if (/rpc_(error|success)/.test(payload.type)) {
+        const callId = payload.call_id;
+        if (callId in this.unresolvedRpcs) {
+          this.unresolvedRpcs[callId](payload);
+        } else {
+          console.error(`Warning: Got response for RPC we didn't initiate`, payload);
+        }
       } else {
-        console.error(`Warning: Got response for RPC we didn't initiate`, payload);
+        this.emit(payload.type, payload);
+        // this ideally should be in some other file
+        if (payload.type === "sub_new_post") {
+          store.dispatch(actions.addPost(payload.post));
+        }
       }
-    } else {
-      // this ideally should be in some other file
-      if (payload.type === "sub_new_post") {
-        store.dispatch(actions.addPost(payload.post));
-      }
-    }
+    }).catch(err => {
+      console.error(err);
+    });
   }
 
   send(text) {

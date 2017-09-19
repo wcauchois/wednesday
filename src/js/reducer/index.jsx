@@ -5,7 +5,8 @@ import {PostStore} from 'PostStore';
 const initialState = Map({
   counter: 0,
   post_store: new PostStore(),
-  focused: undefined
+  focused: undefined,
+  timestamp: new Date().getTime(),
 });
 
 const actionsMap = {
@@ -32,6 +33,10 @@ const actionsMap = {
 
   [actions.FOCUS_POST]: (state, action) => {
     return state.set('focused', action.post_id);
+  },
+
+  [actions.UPDATE_TIME]: (state, action) => {
+    return state.set('timestamp', action.timestamp);
   },
 };
 

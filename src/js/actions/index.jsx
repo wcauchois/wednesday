@@ -6,10 +6,11 @@ export function testAction() {
 }
 
 export const ADD_ROOT = 'ADD_ROOT';
-export function addRoot(post) {
+// XXX(wcauchois): Is this used?
+export function addRoot(post_values) {
   return {
     type: ADD_ROOT,
-    post_values: post_values
+    post_values
   };
 }
 
@@ -31,7 +32,7 @@ export const ADD_TREE = 'ADD_TREE';
 export function addTree(posts_values) {
   return {
     type: ADD_TREE,
-    posts_values: posts_values
+    posts_values
   };
 }
 
@@ -39,6 +40,14 @@ export const FOCUS_POST = 'FOCUS_POST';
 export function focusPost(post_id) {
   return {
     type: FOCUS_POST,
-    post_id: post_id
+    post_id
+  };
+}
+
+export const UPDATE_TIME = 'UPDATE_TIME';
+export function updateTime(timestamp) {
+  return {
+    type: UPDATE_TIME,
+    timestamp
   };
 }

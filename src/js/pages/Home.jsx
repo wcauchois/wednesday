@@ -4,9 +4,11 @@ import {Link} from 'react-router-dom';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
 import classNames from 'classnames';
+import ReactDOM from 'react-dom';
+import {Shortcuts} from 'react-shortcuts';
 
 import * as actions from 'actions';
-import {pickColorFromString, nbsp} from 'Utils';
+import {pickColorFromString, nbsp, withoutScrolling} from 'Utils';
 import Transport from 'Transport';
 
 
@@ -122,9 +124,13 @@ class AddPostComponent extends Component {
   }
 
   handleTextareaKeyDown(event) {
-    // Cmd+enter
-    if (event.keyCode === 13 && event.metaKey) {
+    if (event.keyCode === 13 && !event.shiftKey) { // Enter
+      event.preventDefault();
       this.submitButtonClicked();
+    } else if (event.keyCode === 27) { // Escape
+      if (this.props.onTextareaEscape) {
+        this.props.onTextareaEscape();
+      }
     }
   }
 
@@ -164,17 +170,49 @@ const AddPost = connect(
 
 
 class HomeComponent extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  _handleShortcuts(action, event) {
+    if (action === 'MOVE_UP') {
+      this.props.moveFocus(1);
+    } else if (action === 'MOVE_DOWN') {
+      this.props.moveFocus(-1);
+    } else if (action === 'FOCUS_INPUT') {
+      if (this.addPostRef) {
+        event.preventDefault();
+        ReactDOM.findDOMNode(this.addPostRef).querySelector('textarea').focus();
+      }
+    }
+  }
+
+  onAddPostTextareaEscape() {
+    if (this.shortcutsRef) {
+      withoutScrolling(() => {
+        ReactDOM.findDOMNode(this.shortcutsRef).focus();
+      });
+    }
+  }
+
   render() {
-    return <div>
-      This is the index page.<br />
-      <Link to="/about">About page</Link><br />
+    return (
       <div>
-        {this.props.roots.map((root, id) =>
-          <PostTree key={id} root={root} />
-        )} 
+        <Shortcuts
+          name='HOME'
+          handler={this._handleShortcuts.bind(this)}
+          ref={(shortcuts) => { this.shortcutsRef = shortcuts; }}>
+          <div>
+            {this.props.roots.map((root, id) =>
+              <PostTree key={id} root={root} />
+            )}
+          </div>
+        </Shortcuts>
+        <AddPost
+          onTextareaEscape={this.onAddPostTextareaEscape.bind(this)}
+          ref={(addPost) => { this.addPostRef = addPost; }} />
       </div>
-      <AddPost />
-    </div>;
+    );
   }
 
   // NOTE(amstocker): this is just a temporary way to show all posts
@@ -192,7 +230,14 @@ class HomeComponent extends Component {
 
 const Home = connect(
   state => {
-    return {roots: state.get('post_store').roots}
+    return {
+      roots: state.get('post_store').roots,
+    };
+  },
+  dispatch => {
+    return {
+      moveFocus: delta => dispatch(actions.moveFocus(delta)),
+    };
   }
 )(HomeComponent);
 

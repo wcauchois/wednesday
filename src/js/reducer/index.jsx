@@ -38,6 +38,31 @@ const actionsMap = {
   [actions.UPDATE_TIME]: (state, action) => {
     return state.set('timestamp', action.timestamp);
   },
+
+  [actions.MOVE_FOCUS]: (state, action) => {
+    const currentFocus = state.get('focused');
+    const postStore = state.get('post_store');
+    const delta = action.delta;
+    let newFocus = currentFocus;
+    if (currentFocus) {
+      // NOTE(wcauchois): This is a pretty inefficient algorithm that flattens the whole tree.
+      // Might be able to come up with something better...
+      const linearView = [];
+      for (const [_, root] of postStore.roots) {
+        for (const node of root.flatView()) {
+          linearView.push(node.id);
+        }
+      }
+      const currentIndex = linearView.indexOf(currentFocus);
+      const newIndex = Math.min(Math.max(currentIndex + delta, 0), linearView.length - 1);
+      newFocus = linearView[newIndex];
+    } else {
+      if (postStore.roots.size > 0) {
+        newFocus = postStore.roots.first().id;
+      }
+    }
+    return state.set('focused', newFocus);
+  },
 };
 
 export default function reducer(state = initialState, action = {}) {

@@ -10,6 +10,13 @@ export function parseJsonPromise(text) {
   });
 }
 
+// https://stackoverflow.com/a/6610501/1480571
+export function withoutScrolling(thunk) {
+  const x = window.scrollX, y = window.scrollY;
+  thunk();
+  window.scrollTo(x, y);
+}
+
 export function pickColorFromString(s) {
   let num = 0;
   for (let i = 0; i < s.length; i++) {

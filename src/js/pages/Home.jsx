@@ -215,8 +215,8 @@ class HomeComponent extends Component {
     );
   }
 
-  // NOTE(amstocker): this is just a temporary way to show all posts
   componentDidMount() {
+    // NOTE(amstocker): this is just a temporary way to show all posts
     Transport.call.get_toplevels().then(res => {
       for (const post of res) {
         Transport.call.subscribe({id: post.id});
@@ -225,6 +225,9 @@ class HomeComponent extends Component {
         });
       }
     });
+
+    // This is a tiny bit hacky
+    ReactDOM.findDOMNode(this).querySelector('shortcuts').focus();
   }
 }
 

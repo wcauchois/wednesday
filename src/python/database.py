@@ -26,27 +26,29 @@ class Database(Service):
   async def shutdown(self):
     await super().shutdown()
 
-  async def insert_post(self, parent_id, content=None, ip_address=None):
+  async def execute(self, query):
     async with self.engine.acquire() as conn:
-      res = await conn.execute(
-        post_table.insert().values(parent_id=parent_id,
-                                   content=content,
-                                   ip_address=ip_address)
-      )
-      return dict(await res.first())
+      return (await conn.execute(query))
+
+  async def execute_one(self, query):
+    return dict(await (await self.execute(query)).first())
+  
+  async def execute_many(self, query):
+    return [dict(row) async for row in (await self.execute(query))]
+
+  async def insert_post(self, parent_id, content=None, ip_address=None):
+    return (await self.execute_one(
+      post_table.insert().values(parent_id=parent_id,
+                                 content=content,
+                                 ip_address=ip_address)
+    ))
 
   async def get_subtree(self, parent_id):
-    async with self.engine.acquire() as conn:
-      res = await conn.execute(
-        select(['*']).select_from(
-          func.subtree(parent_id, self.MAX_SUBTREE_DEPTH)
-        )
-      )
-      return [dict(row) async for row in res]
+    return (await self.execute_many(
+      select(['*']).select_from(func.subtree(parent_id, self.MAX_SUBTREE_DEPTH))
+    ))
 
   async def get_toplevels(self):
-    async with self.engine.acquire() as conn:
-      res = await conn.execute(
-        post_table.select().where(post_table.c.parent_id == None)
-      )
-      return [dict(row) async for row in res]
+    return (await self.execute_many(
+      post_table.select().where(post_table.c.parent_id == None)
+    ))

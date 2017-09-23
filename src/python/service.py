@@ -11,6 +11,7 @@ class ServiceException(Exception):
 class Service:
   def __init__(self, app, loop=None):
     self.app = app
+    self.logger = app.logger
     self.loop = loop or asyncio.get_event_loop()
 
   @property

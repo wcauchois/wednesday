@@ -12,7 +12,7 @@ class DatabaseException(ServiceException):
 
 
 class Database(Service):
-  MAX_SUBTREE_DEPTH = 1000
+  MAX_ROWS = 1000
 
   def __init__(self, app, db_url=None, loop=None):
     super().__init__(app, loop=loop)
@@ -45,10 +45,18 @@ class Database(Service):
 
   async def get_subtree(self, parent_id):
     return (await self.execute_many(
-      select(['*']).select_from(func.subtree(parent_id, self.MAX_SUBTREE_DEPTH))
+      select(['*']).select_from(func.subtree(parent_id, self.MAX_ROWS))
     ))
 
+  async def get_hot_all(self, n):
+    return (await self.execute_many(
+      post_table.select()
+        .order_by(post_table.c.score.desc())
+        .limit(min(self.MAX_ROWS, n))
+    ))
+    
   async def get_toplevels(self):
     return (await self.execute_many(
-      post_table.select().where(post_table.c.parent_id == None)
+      post_table.select()
+        .where(post_table.c.parent_id == None)
     ))

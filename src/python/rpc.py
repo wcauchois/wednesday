@@ -80,6 +80,16 @@ class RpcMethods:
   @staticmethod
   @require_authentication
   @pass_args0_as_kwargs
+  async def get_hot(app, view, n=10):
+    try:
+      n = max(int(n), 0)
+    except:
+      raise RpcException('Invalid number: %'.format(n))
+    return [render.post(p) for p in (await app['db'].get_hot_all(n))]
+
+  @staticmethod
+  @require_authentication
+  @pass_args0_as_kwargs
   async def add_post(app, view, parent_id=None, content=None):
     return (await app['db'].insert_post(parent_id=parent_id, content=content,
                                         ip_address=view.client.ip_address))

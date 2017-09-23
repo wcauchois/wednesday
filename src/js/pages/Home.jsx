@@ -62,6 +62,9 @@ class PostComponent extends Component {
               {relativeTimestamp}
             </li>
             {authorId}
+            <li>
+            {this.props.post.score ? (this.props.post.score).toFixed(3) : "N/A"}
+            </li>
           </ul>
         </div>
         <div className="content">

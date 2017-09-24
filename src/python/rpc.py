@@ -84,7 +84,7 @@ class RpcMethods:
     try:
       n = max(int(n), 0)
     except:
-      raise RpcException('Invalid number: %'.format(n))
+      raise RpcException('Invalid number: {}'.format(n))
     return [render.post(p) for p in (await app['db'].get_hot_all(n))]
 
   @staticmethod

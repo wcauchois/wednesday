@@ -17,7 +17,6 @@ export default class Root extends Component {
   render() {
     return <BrowserRouter>
       <div className="app">
-        <Menu />
         <div className="page">
           <Routes />
         </div>

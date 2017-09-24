@@ -1,6 +1,8 @@
 @import './colors.less';
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
+@gridColumnHeader: #ff8279;
+@gridColumnHeaderText: #ffffff;
 @postTitle: #c6c9ff;
 @postInner: #e7e8ff;
 @focusedPostTitle: #ffd9c6;
@@ -37,7 +39,9 @@ body {
   .fontFamily();
 }
 
-body, html {margin: 0;}
+body, html {
+  margin: 0;
+}
 
 button {
   .fontFamily();
@@ -79,58 +83,80 @@ button {
   }
 }
 
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-column-gap: 10px;
+}
+
+.grid-column-header {
+  background-color: @gridColumnHeader;
+  display: block;
+  color: @gridColumnHeaderText;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.post-preview-list {
+  grid-column: 1;
+}
+
+.post-view {
+  grid-column: 2;
+}
+
 .post-node {
   margin-left: 20px;
   border-left: 2px dotted @postInner;
+}
 
-  .post {
-    margin: 5px 0;
+.post {
+  margin: 5px 0;
 
-    &.focused {
-      .post-inner {
-        .title {background-color: @focusedPostTitle;}
+  &.focused {
+    .post-inner {
+      .title {background-color: @focusedPostTitle;}
 
-        background-color: @focusedPostInner;
+      background-color: @focusedPostInner;
+    }
+  }
+
+  .post-inner {
+    display: inline-block;
+    background-color: @postInner;
+
+    .title {
+      background-color: @postTitle;
+      padding: 5px 10px 5px 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+
+      ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin: 0;
+      }
+
+      li {
+        display: inline-block;
+        margin-left: 10px;
+
+        &:first-child {margin-left: 0;}
+      }
+
+      .authorIdSlug {
+        padding: 2px;
+        cursor: default;
+      }
+
+      .timestamp {
+        font-style: italic;
+        color: #5a5a5a;
       }
     }
-  
-    .post-inner {
-      display: inline-block;
-      background-color: @postInner;
-  
-      .title {
-        background-color: @postTitle;
-        padding: 5px 10px 5px 10px;
-        margin-bottom: 5px;
-        font-weight: bold;
-  
-        ul {
-          list-style-type: none;
-          padding-left: 0;
-          margin: 0;
-        }
-  
-        li {
-          display: inline-block;
-          margin-left: 10px;
-  
-          &:first-child {margin-left: 0;}
-        }
-  
-        .authorIdSlug {
-          padding: 2px;
-          cursor: default;
-        }
-  
-        .timestamp {
-          font-style: italic;
-          color: #5a5a5a;
-        }
-      }
-  
-      .content {
-        padding: 0 10px 5px 10px;
-      }
+
+    .content {
+      padding: 0 10px 5px 10px;
     }
   }
 }
@@ -146,6 +172,7 @@ a {
 }
 
 .app .menu {
+  
   .nav {
     margin: 10px 5px;
     border: 2px solid @color-primary-2;

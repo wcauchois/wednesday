@@ -63,7 +63,7 @@ class PostComponent extends Component {
             </li>
             {authorId}
             <li>
-            {this.props.post.score ? (this.props.post.score).toFixed(8) : "N/A"}
+            {this.props.post.score ? (this.props.post.score).toFixed(4) : "N/A"}
             </li>
           </ul>
         </div>
@@ -158,6 +158,28 @@ class AddPostComponent extends Component {
   }
 }
 
+
+class PostPreviewListComponent extends Component {
+  render() {
+    return <div className="post-preview-list">
+      <span className="grid-column-header">{"HOT"}</span>
+      {this.props.posts.map((post) =>
+        // (amstocker) should be replaced with a PostPreview component eventually...
+        <Post post={post} key={post.id} />
+      )}
+    </div>;
+  }
+}
+
+const PostPreviewList = connect(
+  state => {
+    return {
+      posts: state.get('hot_posts')
+    };
+  }
+)(PostPreviewListComponent);
+
+
 const AddPost = connect(
   state => {
     return {
@@ -200,20 +222,24 @@ class HomeComponent extends Component {
 
   render() {
     return (
-      <div>
-        <Shortcuts
-          name='HOME'
-          handler={this._handleShortcuts.bind(this)}
-          ref={(shortcuts) => { this.shortcutsRef = shortcuts; }}>
-          <div>
-            {this.props.roots.map((root, id) =>
-              <PostTree key={id} root={root} />
-            )}
-          </div>
-        </Shortcuts>
-        <AddPost
-          onTextareaEscape={this.onAddPostTextareaEscape.bind(this)}
-          ref={(addPost) => { this.addPostRef = addPost; }} />
+      <div className="grid-container">
+        <PostPreviewList />
+        <div className="post-view">
+          <span className="grid-column-header">{"CHAT"}</span>
+          <Shortcuts
+            name='HOME'
+            handler={this._handleShortcuts.bind(this)}
+            ref={(shortcuts) => { this.shortcutsRef = shortcuts; }}>
+            <div>
+              {this.props.roots.map((root, id) =>
+                <PostTree key={id} root={root} />
+              )}
+            </div>
+          </Shortcuts>
+          <AddPost
+            onTextareaEscape={this.onAddPostTextareaEscape.bind(this)}
+            ref={(addPost) => { this.addPostRef = addPost; }} />
+        </div>
       </div>
     );
   }
@@ -228,6 +254,9 @@ class HomeComponent extends Component {
         });
       }
     });
+
+    // start polling for hot posts
+    store.dispatch(actions.hotPostsPoll());
 
     // This is a tiny bit hacky
     ReactDOM.findDOMNode(this).querySelector('shortcuts').focus();

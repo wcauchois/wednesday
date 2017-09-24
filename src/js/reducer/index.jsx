@@ -1,10 +1,12 @@
 import {Map, List} from 'immutable';
 import * as actions from 'actions';
-import {PostStore} from 'PostStore'; 
+import {Post, PostStore} from 'PostStore'; 
 
 const initialState = Map({
   counter: 0,
   post_store: new PostStore(),
+  hot_posts: new List(),
+  hot_posts_poll_interval_id: -1,
   focused: undefined,
   timestamp: new Date().getTime(),
 });
@@ -29,6 +31,19 @@ const actionsMap = {
 
   [actions.ADD_TREE]: (state, action) => {
     return state.set('post_store', state.get('post_store').addTreeFromValues(action.posts_values));
+  },
+
+  [actions.HOT_POSTS_SET_INTERVAL]: (state, action) => {
+    return state.set('hot_posts_poll_interval_id', action.id);
+  },
+
+  [actions.HOT_POSTS_CLEAR_INTERVAL]: (state, action) => {
+    clearInterval(state.get('hot_posts_poll_interval_id'));
+    return state.set('hot_posts_poll_interval_id', -1);
+  },
+
+  [actions.HOT_POSTS_SET]: (state, action) => {
+    return state.set('hot_posts', new List(action.posts_values.map((vals) => new Post(vals))));
   },
 
   [actions.FOCUS_POST]: (state, action) => {

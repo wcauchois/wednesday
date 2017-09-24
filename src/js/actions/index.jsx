@@ -36,6 +36,41 @@ export function addTree(posts_values) {
   };
 }
 
+export const HOT_POSTS_SET_INTERVAL = 'HOT_POSTS_SET_INTERVAL';
+export function hotPostsSetInterval(id) {
+  return {
+    type: HOT_POSTS_SET_INTERVAL,
+    id,
+  };
+}
+
+export const HOT_POSTS_STOP_INTERVAL = 'HOT_POSTS_STOP_INTERVAL';
+export function hotPostsStopInterval() {
+  return {
+    type: HOT_POSTS_STOP_INTERVAL,
+  };
+}
+
+export const HOT_POSTS_SET = 'HOT_POSTS_SET';
+export function hotPostsSet(posts_values) {
+  return {
+    type: HOT_POSTS_SET,
+    posts_values,
+  };
+}
+
+export function hotPostsPoll() {
+  return function(dispatch) {
+    // should prob impl some kind of timeout behavior
+    const id = setInterval(() => {
+      Transport.call.get_hot({n: 10}).then((ret) => {
+        dispatch(hotPostsSet(ret));
+      });
+    }, 5000);
+    dispatch(hotPostsSetInterval(id));
+  };
+}
+
 export const FOCUS_POST = 'FOCUS_POST';
 export function focusPost(post_id) {
   return {

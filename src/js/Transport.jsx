@@ -102,10 +102,19 @@ class Transport extends EventEmitter {
         if (err) {
           reject(err);
         } else {
+          const boldStyle = 'font-weight: bold', unboldStyle = 'font-weight: normal';
           if (response.type === 'rpc_error') {
+            console.error(`Got RPC error to %c${methodName}%c (call ID = ${callId})`,
+              response.message, boldStyle, unboldStyle);
             reject(new Error(response.message));
           } else {
-            parseJsonPromise(response.return_value).then(resolve, reject);
+            parseJsonPromise(response.return_value)
+              .then((parsedJson) => {
+                console.log(`Got RPC response to %c${methodName}%c (call ID = ${callId})`,
+                  boldStyle, unboldStyle, parsedJson);
+                return parsedJson;
+              })
+              .then(resolve, reject);
           }
         }
       };
@@ -129,7 +138,6 @@ class Transport extends EventEmitter {
 
   onMessage(event) {
     parseJsonPromise(event.data).then((payload) => {
-      console.log('Got message from server:', payload);
       if (/rpc_(error|success)/.test(payload.type)) {
         const callId = payload.call_id;
         if (callId in this.unresolvedRpcs) {
@@ -138,6 +146,7 @@ class Transport extends EventEmitter {
           console.error(`Warning: Got response for RPC we didn't initiate`, payload);
         }
       } else {
+        console.log('Got non-RPC message from server:', payload);
         this.emit(payload.type, payload);
         // this ideally should be in some other file
         if (payload.type === "sub_new_post") {

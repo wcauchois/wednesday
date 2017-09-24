@@ -63,7 +63,7 @@ class PostComponent extends Component {
             </li>
             {authorId}
             <li>
-            {this.props.post.score ? (this.props.post.score).toFixed(3) : "N/A"}
+            {this.props.post.score ? (this.props.post.score).toFixed(8) : "N/A"}
             </li>
           </ul>
         </div>

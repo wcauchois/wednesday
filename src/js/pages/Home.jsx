@@ -256,7 +256,7 @@ class HomeComponent extends Component {
     });
 
     // start polling for hot posts
-    store.dispatch(actions.hotPostsPoll());
+    store.dispatch(actions.hotPostsPoll(1000));
 
     // This is a tiny bit hacky
     ReactDOM.findDOMNode(this).querySelector('shortcuts').focus();

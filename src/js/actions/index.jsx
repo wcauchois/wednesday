@@ -59,14 +59,14 @@ export function hotPostsSet(posts_values) {
   };
 }
 
-export function hotPostsPoll() {
+export function hotPostsPoll(interval) {
   return function(dispatch) {
     // should prob impl some kind of timeout behavior
     const id = setInterval(() => {
       Transport.call.get_hot({n: 10}).then((ret) => {
         dispatch(hotPostsSet(ret));
       });
-    }, 5000);
+    }, interval);
     dispatch(hotPostsSetInterval(id));
   };
 }

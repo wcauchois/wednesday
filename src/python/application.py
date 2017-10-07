@@ -10,6 +10,7 @@ from pubsub import PubSub
 
 app = web.Application()
 app.router.add_static('/dist', './dist')
+app.router.add_static('/static', './static')
 app.router.add_get('/ws', WebSocketView)
 app.router.add_get('/_debug', DebugView)
 

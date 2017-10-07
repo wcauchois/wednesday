@@ -64,7 +64,12 @@ class PostComponent extends Component {
           </ul>
         </div>
         <div className="content">
-          {this.props.post.content}
+          <div className="content-text">
+            {this.props.post.content}
+          </div>
+          <div className="content-arrow">
+            <img src="static/right_arrow.svg" width="20" />
+          </div>
         </div>
       </div>
     </div>

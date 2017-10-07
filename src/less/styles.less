@@ -119,6 +119,10 @@ button {
 
       background-color: @focusedPostInner;
     }
+
+    .content-arrow img {
+      transform: rotate(90deg);
+    }
   }
 
   .post-inner {
@@ -157,6 +161,25 @@ button {
 
     .content {
       padding: 0 10px 5px 10px;
+      display: flex;
+
+      .content-text {
+        display: inline-block;
+        flex-grow: 1;
+      }
+
+      .content-arrow {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 5px;
+
+        img {
+          cursor: pointer;
+          transition: transform 0.3s;
+          height: 20px;
+        }
+      }
     }
   }
 }

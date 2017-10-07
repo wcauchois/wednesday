@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
+import {WindowResizeListener} from 'react-window-resize-listener';
 
 import * as actions from 'actions';
 import {withoutScrolling} from 'Utils';
@@ -38,10 +39,19 @@ class HomeComponent extends Component {
     }
   }
 
+  onWindowResize() {
+    if (this.postPreviewListRef) {
+      const offsetWidth = ReactDOM.findDOMNode(this.postPreviewListRef).offsetWidth;
+      this.props.setAddPostMarginLeft(offsetWidth);
+    }
+  }
+
   render() {
     return (
       <div className="grid-container">
-        <PostPreviewList />
+        <WindowResizeListener onResize={this.onWindowResize.bind(this)} />
+        <PostPreviewList
+          ref={(postPreviewList) => { this.postPreviewListRef = postPreviewList; }} />
         <div className="post-view">
           <span className="grid-column-header">{"CHAT"}</span>
           <Shortcuts
@@ -90,6 +100,7 @@ const Home = connect(
   dispatch => {
     return {
       moveFocus: delta => dispatch(actions.moveFocus(delta)),
+      setAddPostMarginLeft: value => dispatch(actions.setAddPostMarginLeft(value)),
     };
   }
 )(HomeComponent);

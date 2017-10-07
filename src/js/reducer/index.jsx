@@ -9,6 +9,7 @@ const initialState = Map({
   hot_posts_poll_interval_id: -1,
   focused: undefined,
   timestamp: new Date().getTime(),
+  add_post_margin_left: 0,
 });
 
 const actionsMap = {
@@ -77,6 +78,10 @@ const actionsMap = {
       }
     }
     return state.set('focused', newFocus);
+  },
+
+  [actions.SET_ADD_POST_MARGIN_LEFT]: (state, action) => {
+    return state.set('add_post_margin_left', action.value);
   },
 };
 

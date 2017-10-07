@@ -94,3 +94,11 @@ export function moveFocus(delta) {
     delta,
   };
 }
+
+export const SET_ADD_POST_MARGIN_LEFT = 'SET_ADD_POST_MARGIN_LEFT';
+export function setAddPostMarginLeft(value) {
+  return {
+    type: SET_ADD_POST_MARGIN_LEFT,
+    value
+  };
+}

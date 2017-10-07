@@ -7,9 +7,9 @@ import * as actions from 'actions';
 import {withoutScrolling} from 'Utils';
 import Transport from 'Transport';
 
-import PostTree from './components/PostTree';
-import PostPreviewList from './components/PostPreviewList';
-import AddPost from './components/AddPost';
+import PostTree from 'components/PostTree';
+import PostPreviewList from 'components/PostPreviewList';
+import AddPost from 'components/AddPost';
 
 
 class HomeComponent extends Component {

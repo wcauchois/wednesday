@@ -148,10 +148,6 @@ class Transport extends EventEmitter {
       } else {
         console.log('Got non-RPC message from server:', payload);
         this.emit(payload.type, payload);
-        // this ideally should be in some other file
-        if (payload.type === "sub_new_post") {
-          store.dispatch(actions.addPost(payload.post));
-        }
       }
     }).catch(err => {
       console.error(err);

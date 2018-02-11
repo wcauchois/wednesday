@@ -6,7 +6,7 @@ import {WindowResizeListener} from 'react-window-resize-listener';
 
 import * as actions from 'actions';
 import {withoutScrolling} from 'Utils';
-import Transport from 'Transport';
+import Transport from 'transport/Transport';
 
 import PostTree from 'components/PostTree';
 import PostPreviewList from 'components/PostPreviewList';

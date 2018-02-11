@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Provider} from 'react-redux';
 import Root from 'views/Root';
-import Transport from 'Transport';
+import Transport from 'transport/Transport';
 import store from 'config/store';
 import * as actions from 'actions';
 import '../less/styles.less';

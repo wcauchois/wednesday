@@ -6,7 +6,7 @@ import {WindowResizeListener} from 'react-window-resize-listener';
 
 import * as actions from 'actions';
 import {withoutScrolling} from 'Utils';
-import Transport from 'Transport';
+import Transport from 'transport/Transport';
 
 import PostTree from 'components/PostTree';
 import PostPreviewList from 'components/PostPreviewList';
@@ -74,10 +74,10 @@ class HomeComponent extends Component {
 
   componentDidMount() {
     // NOTE(amstocker): this is just a temporary way to show all posts
-    Transport.call.get_toplevels().then(res => {
+    Transport.call.getTopLevels().then(res => {
       for (const post of res) {
         Transport.call.subscribe({id: post.id});
-        Transport.call.get_tree({id: post.id}).then(res => {
+        Transport.call.getTree({id: post.id}).then(res => {
           store.dispatch(actions.addTree(res));
         });
       }

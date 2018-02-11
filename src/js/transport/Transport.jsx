@@ -5,6 +5,7 @@ import {parseJsonPromise} from 'Utils';
 import store from 'config/store';
 import * as actions from 'actions';
 import EventEmitter from 'event-emitter-es6';
+import TransportCaller from 'transport/TransportCaller';
 
 const RPC_TIMEOUT = 5000;
 
@@ -35,14 +36,8 @@ class Transport extends EventEmitter {
     // RPCs may be queued if the WebSocket isn't yet connected.
     this.queuedRpcs = [];
 
-    // Convenience proxy that lets you say "Transport.call.someRpc(myArguments)"
-    this.call = new Proxy({}, {
-      get: (target, name) => {
-        return (...args) => {
-          return this.callRpc(name, ...args);
-        }
-      }
-    });
+    // Call RPCs via Transport.call.X.
+    this.call = new TransportCaller(this);
 
     // ID from server
     this.client_id = undefined;

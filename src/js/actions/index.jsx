@@ -16,7 +16,7 @@ export function addRoot(post_values) {
 
 export function newPost(post_values) {
   return async function(dispatch) {
-    const ret = await Transport.call.add_post(post_values);
+    const ret = await Transport.call.addPost(post_values);
   };
 }
 
@@ -63,7 +63,7 @@ export function hotPostsPoll(interval) {
   return function(dispatch) {
     // should prob impl some kind of timeout behavior
     const id = setInterval(() => {
-      Transport.call.get_hot({n: 10}).then((ret) => {
+      Transport.call.getHot({n: 10}).then((ret) => {
         dispatch(hotPostsSet(ret));
       });
     }, interval);
